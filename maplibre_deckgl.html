@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<script language="javascript" src="js/utils_c.js"></script>
+<script language="javascript" src="js/simbology.js"></script>
+<script language="javascript" src="js/utils.js"></script>
+<script language="javascript" src="config.js"></script>
+
+<link rel="manifest" href="manifest.json">
+<link href="https://unpkg.com/maplibre-gl@5.x/dist/maplibre-gl.css" rel="stylesheet" />
+<script src="https://unpkg.com/maplibre-gl@5.x/dist/maplibre-gl.js"></script>
+
+<script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
+<script src="https://unpkg.com/@deck.gl/mapbox@latest/dist.min.js"></script>
+
+
+<style>
+	#map { height: 100vh}
+</style>
+
+<script language="javascript">
+
+const C_DELAY=100;
+EXPAND_BBOX=10;
+
+
+let geojson_layers={};
+let deckOverlay=null;
+let counters={};
+
+function clearOldData(){
+	counters={};
+	geojson_layers={};
+}
+
+const extruded=document.location.href.indexOf('?edificios_madrid')>=0;
+
+function getHeight(l){
+    let f=650;
+    if(!isNaN(l)) f=parseFloat(l);
+    f-=500;
+    f/=3;
+    return f;
+}
+
+
+function setDeckOverlay(){
+		// INTEGRACIÓN: Usar MapboxOverlay como un control de MapLibre
+		//if(deckOverlay) map.removeControl(deckOverlay);
+		if(deckOverlay) deckOverlay.setProps({
+			layers: Object.values(geojson_layers).filter(Boolean)  //Quitar los null
+		});
+
+}
+
+function deleteLayers(s){
+	//Borrar bitmap
+     let params={command:'deletebitmapindex',LAYER_TO_LOAD:s};
+     if(workers[s]) workers[s].postMessage(params);else console.log('No se encuentra worker');
+
+	 let counter=0;
+	while(geojson_layers[s+'_'+counter]){
+		console.log('Borrado '+s+'_'+counter);
+		delete geojson_layers[s+'_'+counter];
+		if(geojson_layers[s+'_bp_'+counter]) {delete geojson_layers[s+'_bp_'+counter];console.log('Borrado bp '+s+'_'+counter);};
+		counter++;
+	}
+	 setDeckOverlay();
+}
+
+function showFeatureInfo(properties,layer_name,e){
+	let template=getLayerDataByName(layer_name).CLICK_TEMPLATE;
+	const html = fillTemplate(template, properties);
+	new maplibregl.Popup()
+		.setLngLat(e.srcEvent.lngLat)
+		.setHTML(html)
+		.addTo(map).getElement().style.zIndex = 2;
+}
+
+function loadGeoJsonDataArray(ar,layer_name){
+    if(ar.length>0){
+
+		let counter=counters[layer_name];
+		if(counter==null) counter=0;
+		
+		let d={
+			id: 'capa-'+layer_name+'_'+counter,
+			data: { type: "FeatureCollection", features:ar },
+			filled: true,
+			pickable: true,
+			onClick: (info,event) => {if(info) if(info.object) showFeatureInfo(info.object.properties,layer_name,event)}
+		};
+
+		if(extruded){
+			d={...d,
+			extruded: true,
+
+			getElevation: f => getHeight(f.properties.ETIQUETA),  
+			getFillColor: f =>   [230,230,230,200] 
+		}
+		}else{
+			d={...d,
+			widthUnits: 'pixels',
+			getLineWidth: 2,
+			getLineColor: [0,0,0],
+			extruded: false,
+
+			getFillColor: d => hexToRgbaArray(d.properties.color,0.5),
+			}		
+		}
+
+
+		if(getLayerDataByName(layer_name).geometry_type=='Line'){
+			d.filled=false;
+			d.stroked=true;
+			d.getLineColor= [100, 100, 250, 200];
+			d.getFillColor= [250, 100, 250, 255];
+			d.getLineWidth= 5;
+			d.lineWidthMinPixels=1;
+		}else{
+			d.filled=true;
+		}
+
+		if(withPattern(layer_name)){
+			let dd={
+				id: 'capa-'+layer_name+'_bp_'+counter,
+				data: { type: "FeatureCollection", features:ar },
+				filled: true,
+				pickable: false,
+				widthUnits: 'pixels',
+				getLineWidth: 2,
+				getLineColor: [0,0,0],
+				extruded: false,
+				getFillColor: d => hexToRgbaArray(swap_color(d.properties.color),0.7),
+
+
+				fillPatternMask : true,
+				fillPatternAtlas: './pattern/pattern.png',
+				fillPatternMapping: './pattern/pattern.json',
+				getFillPattern: (f, {index}) => patterns[f.id % 4], //index % 4
+				getFillPatternScale: 1,
+				getFillPatternOffset: [0, 0],
+
+				// Define extensions
+				extensions: [new deck.FillStyleExtension({pattern: true})]
+
+
+			}
+			geojson_layers[layer_name+'_bp_'+counter]=new deck.GeoJsonLayer(dd);
+
+		}
+		geojson_layers[layer_name+'_'+counter]=new deck.GeoJsonLayer(d);
+		counter++;
+		counters[layer_name]=counter;
+
+		setDeckOverlay();
+
+    }
+}
+
+
+
+
+
+function getBoundingBox3857() {
+			const { _sw, _ne } = map.getBounds();
+			return [epsg4326ToEpsg3857([_sw.lng,_sw.lat]),epsg4326ToEpsg3857([_ne.lng,_ne.lat])].flatMap(x=>x);
+}
+
+
+function fgBoundingBox() {
+			const { _sw, _ne } = map.getBounds();
+			return { minX: _sw.lng, minY: _sw.lat, maxX: _ne.lng, maxY: _ne.lat};
+}
+
+
+function clearLayer(layer_name){
+	console.log('Layer '+layer_name+' not in zoom range');
+	deleteLayers(layer_name);
+}
+
+function getNewMap(m_petition){
+                let range=getBoundingBox3857();
+				let screen_width=map._container.clientWidth;
+				getNewMapGen(m_petition,range,screen_width,clearLayer);
+}
+
+
+
+
+	document.addEventListener("DOMContentLoaded", async () => {
+        let m_initialViewState={
+            container: "map",
+            style: {
+					'version': 8,
+					'sources': {
+						'raster-tiles': {
+							'type': 'raster',
+							"tiles": [
+							"https://www.ign.es/wmts/pnoa-ma?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=OI.OrthoimageCoverage&STYLE=default&TILEMATRIXSET=EPSG:3857&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image/jpeg"
+							],
+							"tileSize": 256,
+							"attribution": "© Instituto Geografico Nacional"
+						}
+					},
+					'glyphs': 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+					'layers': [
+						{
+							'id': 'simple-tiles',
+							'type': 'raster',
+							'source': 'raster-tiles',
+							'minzoom': 0,
+							'maxzoom': 22
+						}
+					]
+				},
+			
+            center: initial_coordinates,
+            zoom: initial_zoom,
+            maxZoom: maxZoom,
+            minZoom: minZoom,
+			antialias: true,
+			canvasContextAttributes: {antialias: true} 
+		}
+
+
+		if(extruded){
+			m_initialViewState={...m_initialViewState,
+				pitch: 60,
+				bearing: 10
+			}
+		}
+
+        map = new maplibregl.Map(m_initialViewState);
+
+		deckOverlay = new deck.MapboxOverlay({
+                layers: []
+        });
+        map.addControl(deckOverlay);		
+		
+		 
+
+
+		
+
+		 map.on('load', () =>{
+							map.on("move", updateResults);
+							map.on("moveend", default_update_results);
+			});
+
+	});
+
+	//let updateResults = getUpdateResultsFunction(updateResults_,C_DELAY,false);
+	let updateResults = getUpdateResultsFunction(default_update_results,C_DELAY,true);
+	default_init(updateResults,clearOldData);
+</script>
+
+
+<body>
+    <div id="map"></div>
+</body>
+</html>

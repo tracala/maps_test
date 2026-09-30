@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>MapTalks 3D</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://unpkg.com/maptalks/dist/maptalks.css" />
+  <link rel="manifest" href="manifest.json">
+  
+  
+  <script type="text/javascript" src="https://unpkg.com/three@0.138.0/build/three.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/maptalks/dist/maptalks.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/maptalks.three/dist/maptalks.three.js"></script>
+  
+
+  <script language="javascript" src="js/utils_c.js"></script>
+  <script language="javascript" src="js/simbology.js"></script>
+  <script language="javascript" src="js/utils.js"></script>
+  <script language="javascript" src="config.js"></script>
+
+  <style>
+    html, body { margin: 0; height: 100%; width: 100%; }
+    #map { width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+
+    const MAX_TEXTURES=10;
+
+   var spatialReference = {
+          'projection': 'EPSG:3857',
+          'resolutions': (function () {
+              const resolutions = [];
+              const d = 2 * 6378137 * Math.PI;
+              for (let i = 0; i < maxZoom; i++) {
+                  resolutions[i] = d / (256 * Math.pow(2, i));
+              }
+              return resolutions;
+          })(),
+          'fullExtent': {
+              'top': 6378137 * Math.PI,
+              'left': -6378137 * Math.PI,
+              'bottom': -6378137 * Math.PI,
+              'right': 6378137 * Math.PI
+          }
+      };
+
+    // Crear el mapa base
+    map = new maptalks.Map('map', {
+      center: initial_coordinates,
+      spatialReference: spatialReference,
+      zoom: initial_zoom,
+      pitch: 60,
+      bearing: 10,
+
+      
+      baseLayer: new maptalks.TileLayer('base', {
+        urlTemplate: baseLayer.urlTemplate,
+        subdomains: ['a', 'b', 'c', 'd'],
+        attribution: baseLayer.attribution
+      })
+    });
+
+    // Crear capa vectorial
+    let vectorLayer_ar = [];
+    let counter=1;
+
+    
+    function getHeight(l){
+        let f=650;
+        if(!isNaN(l)) f=parseFloat(l);
+        f-=500;
+        f/=3;
+        return f;
+    }
+
+    function drawDataOLD(json,color){
+      //console.log(json);
+      let vectorLayer= new maptalks.ExtrudePolygonLayer('geojson-layer_'+vectorLayer_ar.length,json, {
+          'forceRenderOnMoving' : true,
+          'ambientLight' : [0, 0, 0],
+          'polygonFill' : '#bbb'
+        }).addTo(map);
+        vectorLayer_ar.push(vectorLayer);
+    }
+
+    function drawData(json,color){
+      var threeLayer = new maptalks.ThreeLayer('t'+counter++);
+      threeLayer.prepareToDraw = function (gl, scene, camera) {
+        var light = new THREE.DirectionalLight(0xffffff);
+        light.position.set(0, -10, -10).normalize();
+        scene.add(light);
+
+        var material = new THREE.MeshPhongMaterial();
+        json.features.forEach(function (g) {
+            //g is geojson Feature
+            var num = getHeight(g.properties.ETIQUETA);
+
+            var extrudePolygon=threeLayer.toExtrudePolygon(g, { height: num }, material);
+            threeLayer.addMesh(extrudePolygon)
+        });
+      };
+
+      map.addLayer(threeLayer);
+    }
+
+
+    function drawDatav1(json,color){
+        
+        let vectorLayer= new maptalks.VectorLayer('geojson-layer_'+vectorLayer_ar.length).addTo(map);
+        vectorLayer_ar[vectorLayer_ar.length] = vectorLayer;
+
+        const geometries = maptalks.GeoJSON.toGeometry(json);
+
+        // Añadir geometrías a la capa vectorial
+        vectorLayer.addGeometry(geometries);
+
+        // Aplicar estilo básico
+        geometries.forEach(g => {
+          if (g instanceof maptalks.Marker) {
+            g.updateSymbol({
+              'markerType': 'ellipse',
+              'markerFill': '#3388ff',
+              'markerLineColor': '#fff',
+              'markerWidth': 16,
+              'markerHeight': 16
+            });
+          } else if (( g instanceof maptalks.MultiPolygon) || (g instanceof maptalks.Polygon)) {
+            g.updateSymbol({
+              'lineColor': '#3388ff',
+              'lineWidth': 1,
+              'polygonFill': '#'+g.properties.color, //+color
+              'polygonOpacity': 0.4
+            });
+          } else if (( g instanceof maptalks.LineString) || (g instanceof maptalks.MultiLineString)) {
+            g.updateSymbol({
+              'lineColor': '#'+color,
+              'lineWidth': 1,
+            });
+          } else console.log(g);
+        });
+
+
+        // Añadir eventos interactivos
+        vectorLayer.on('click', e => {
+          console.log('click');
+          const props = e.geometry.getProperties();
+          const name = props.name || 'Sin nombre';
+          new maptalks.ui.InfoWindow({
+            content: `<b>${name}</b><br>${JSON.stringify(props)}`,
+            width: 200
+          }).addTo(e.geometry).show(e.coordinate);
+        });
+
+        vectorLayer.on('mouseover', e => {
+          e.geometry.updateSymbol({
+            'markerFill': '#ff0000',
+            'polygonFill': '#ff0000'
+          });
+        });
+
+        vectorLayer.on('mouseout', e => {
+          e.geometry.updateSymbol({
+            'markerFill': '#3388ff',
+            'polygonFill': '#3388ff'
+          });
+        });
+
+
+    }
+    
+
+    function loadGeoJsonDataArray(ar,layer_name){
+        let d=layer_data.filter(l=>l.name==layer_name)[0];    
+        let color=d.color;
+        drawData({
+                "type": "FeatureCollection",
+                "features": ar
+            },color);
+        }
+    
+    function clearOldData(){
+      clearOldDataAUX(vectorLayer_ar);
+    }
+
+      
+
+
+    function updateResults_(){
+            let range=map.getPrjExtent(); 
+            let zoom=map.getZoom();
+            //console.log('range',range);
+            let screen_width=map.getContainer().clientWidth;
+            let map_width=(range.xmax-range.xmin);
+
+            let DINAMIC_MIN_DISTANCE=Math.round(map_width/screen_width)*coef;        
+            let command='getStream';
+            for(let l of layer_data){
+                if((zoom>=l.min_zoom) && (zoom<=l.max_zoom)){
+                    let params={command:command,LAYER_TO_LOAD:l.name,DINAMIC_MIN_DISTANCE:DINAMIC_MIN_DISTANCE,
+                        xmin:range.xmin,ymin:range.ymin,xmax:range.xmax,ymax:range.ymax};
+                    init_stream(params,true,loadGeoJsonDataArray); 
+                } else {
+                    console.log('Layer '+l.name+' not in zoom range');
+                }
+            }				
+
+    }
+
+    updateResults = getUpdateResultsFunction(updateResults_);
+    map.on('zoomend moveend moving', updateResults);
+    default_init(updateResults,clearOldData);
+</script>
+
+</body>
+</html>

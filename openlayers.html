@@ -1,0 +1,226 @@
+<html>
+<head>
+    <link rel="stylesheet" href="site.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.9.0/ol.css" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/ol@v10.9.0/dist/ol.js"></script>
+
+	<script language="javascript" src="js/utils_c.js"></script>
+    <script language="javascript" src="js/simbology.js"></script>
+    <script language="javascript" src="js/utils.js"></script>
+    <script language="javascript" src="config.js"></script>
+
+
+
+</head>
+<body>
+    <style>
+      #map {width: 100%;height:100%;}
+    </style>
+
+    <div id="map"></div>
+    <div id="popup" class="ol-popup">
+      <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+      <div id="popup-content"></div>
+    </div>
+    <script>
+            const WEBGL=false;
+
+            const VectorLayer = WEBGL?ol.layer.WebGLVector:ol.layer.Vector;
+            const HeatmapLayer = ol.layer.Heatmap;
+            const VectorSource = ol.source.Vector;
+
+    
+            const OPACITY='80';
+
+            let vectorSource;
+            
+    
+        function clearOldData(){
+            vectorSource.clear(true);
+        }
+
+        /*
+        function updateResults_(){
+                const view = map.getView();
+                const resolution = view.getResolution();
+
+
+                // bbox en EPSG:3857
+                const extent3857 = view.calculateExtent(map.getSize());
+
+                
+                let coef=10;
+                let DINAMIC_MIN_DISTANCE=resolution*coef;
+                let zoom=map.getView().getZoom();
+                let command='getStream';
+                //console.log(range);
+
+                for(let l of layer_data){
+                    if((zoom>=l.min_zoom) && (zoom<=l.max_zoom)){
+                        let params={command:command,LAYER_TO_LOAD:l.name,DINAMIC_MIN_DISTANCE:DINAMIC_MIN_DISTANCE,
+                            xmin:extent3857[0],ymin:extent3857[1],xmax:extent3857[2],ymax:extent3857[3]};
+                        init_stream(params,true,loadGeoJsonDataArray);
+                    } else console.log('Layer '+l.name+' not in zoom range');
+                }
+                
+        }
+        */
+
+
+    function getNewMap(m_petition){
+                const view = map.getView();
+                const extent3857 = view.calculateExtent(map.getSize());
+                let screen_width=document.getElementById('map').clientWidth;
+                getNewMapGen(m_petition,extent3857,screen_width,null,4);
+                    
+    }
+
+
+
+        const updateResults=getUpdateResultsFunction(default_update_results);
+
+        
+        function hexToRgbaArray(hex, opacity = 0.4) {
+                if(hex.replace) hex = hex.replace('#', ''); else console.log(hex);
+                const bigint = parseInt(hex, 16);
+                const r = (bigint >> 16) & 255;
+                const g = (bigint >> 8) & 255;
+                const b = bigint & 255;
+                return [r, g, b, opacity];
+        }
+
+        function loadGeoJsonDataArray(ar,layer_name){
+            //console.log(layer_name+' loaded '+ar.length+' features');
+            const geojsonFormat = new ol.format.GeoJSON();
+            if(WEBGL) for(let f of ar){f.properties.color_rgba=hexToRgbaArray(f.properties.color)}
+            //console.log(ar);
+
+            const features = geojsonFormat.readFeatures({type: 'FeatureCollection', name: layer_name, features:ar}); 
+            console.log('Loading '+ar.length+' features into layer '+layer_name);
+            vectorSource.addFeatures(features); 
+        }
+
+
+            const labelStyle = new ol.style.Style({
+            text: new Text({
+                font: '13px Calibri,sans-serif',
+                fill: new ol.style.Fill({
+                color: '#000',
+                }),
+                stroke: new ol.style.Stroke({
+                color: '#fff',
+                width: 4,
+                }),
+            }),
+            });
+
+
+
+        function init_map(){ 
+            // Elements that make up the popup.
+            var popupContainer = document.getElementById('popup');
+            var popupContent = document.getElementById('popup-content');
+            var popupCloser = document.getElementById('popup-closer');
+
+            // Create an overlay to anchor the popup to the map.
+            var overlay = new ol.Overlay({
+                element: popupContainer,
+            });
+
+            /**
+             * Add a click handler to hide the popup.
+             * @return {boolean} Don't follow the href.
+             */
+            popupCloser.onclick = function () {
+                overlay.setPosition(undefined);
+                popupCloser.blur();
+                return false;
+            };
+
+
+            
+            vectorSource=new VectorSource({
+                features: []
+            })
+
+
+            // Capa vectorial
+            const vectorLayer = new VectorLayer({
+                source: vectorSource,
+                style:WEBGL?{
+                        'stroke-color': 'black',
+                        'stroke-width': 1,
+                        //'stroke-offset': -1,
+                        'fill-color':  ['get', 'color_rgba']
+                }: function(feature){ 
+                        let e0={
+                            fill: new ol.style.Fill({
+                                color: '#'+feature.get('color')+OPACITY
+                            }),
+                            stroke: new ol.style.Stroke({
+                                color: 'rgba(0, 0, 200, 0.3)', 
+                                width: 3
+                            })
+                        };
+
+                        if(LABEL) if(LABEL.length>0)
+                            e0.text= new ol.style.Text({
+                                                text: String(feature.get(LABEL) || ''),
+                                                font: 'bold 13px Calibri, sans-serif',
+
+                                                fill: new ol.style.Fill({
+                                                    color: '#000000'
+                                                }),
+
+                                                stroke: new ol.style.Stroke({
+                                                    color: '#ffffff',
+                                                    width: 3
+                                                })
+                                            })                        
+
+
+                        let e1= new ol.style.Style(e0);
+                        return e1;
+                    }
+            });
+
+            map = new ol.Map({
+                layers: [
+                    new ol.layer.Tile({ source: new ol.source.OSM() })
+                    ,vectorLayer //heatmap
+                    //new ol.layer.Vector({ source })
+                ],
+                overlays: [overlay],
+                target: 'map',
+                view: new ol.View({
+                    center: ol.proj.fromLonLat(initial_coordinates),
+                    zoom: initial_zoom
+                })
+            });
+            debug=map;
+
+            // show the popup when clicking a feature
+            map.on("click", function(e) {
+                map.forEachFeatureAtPixel(e.pixel, function (feature, layer) {
+                    //console.log(layer);
+                    popupContent.innerHTML = fillTemplate('<h3>'+layer_data[0].CLICK_TEMPLATE+'</h3>', feature.values_);
+                    overlay.setPosition(e.coordinate);
+                })
+            });
+
+            map.on('moveend', updateResults);
+            map.on('change:resolution', updateResults);
+
+            updateResults();
+        }
+    
+        document.addEventListener("DOMContentLoaded", async () => { init_map() });
+        
+        
+        //default_init(updateResults,clearOldData,true);
+        default_init(updateResults,clearOldData,true);
+
+
+</script>
+</body>
+</html>

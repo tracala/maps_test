@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<script language="javascript" src="js/utils.js"></script>
+<script language="javascript" src="js/utils_c.js"></script>
+<script language="javascript" src="config.js"></script>
+
+<link rel="manifest" href="/manifest.json">
+<link href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" rel="stylesheet" />
+<script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+
+
+
+<style>
+	#map { height: 100vh}
+</style>
+
+<script language="javascript">
+
+
+let layer_content=[];
+
+function clearOldData(){
+	layer_content=[];
+}
+
+function loadGeoJsonDataArray(ar,layer_name){
+	console.log('loadGeoJsonDataArray',ar.length);
+    if(!layer_content[layer_name]) layer_content[layer_name]=[];
+	layer_content[layer_name]=layer_content[layer_name].concat(ar);
+    
+    map.getSource(layer_name).setData({
+        "type": "FeatureCollection",
+        "features": layer_content[layer_name]
+    });
+}
+
+
+
+
+
+function getBoundingBox3857() {
+			const { _sw, _ne } = map.getBounds();
+			return [epsg4326ToEpsg3857([_sw.lng,_sw.lat]),epsg4326ToEpsg3857([_ne.lng,_ne.lat])].flatMap(x=>x);
+}
+
+
+function fgBoundingBox() {
+			const { _sw, _ne } = map.getBounds();
+			return { minX: _sw.lng, minY: _sw.lat, maxX: _ne.lng, maxY: _ne.lat};
+}
+
+
+
+
+function updateResults(){
+                let data_;
+                let range=getBoundingBox3857();
+
+				let screen_width=map._container.clientWidth;
+				let map_width=(range[2]-range[0]);
+
+				let DINAMIC_MIN_DISTANCE=Math.round(map_width/screen_width)*coef;
+				let zoom=map.getZoom();
+			    let command='getStream';
+
+
+				for(let l of layer_data){
+					if((zoom>=l.min_zoom) && (zoom<=l.max_zoom)){
+						//console.log('Layer '+l.name+' in zoom range');
+						let params={command:command,LAYER_TO_LOAD:l.name,DINAMIC_MIN_DISTANCE:DINAMIC_MIN_DISTANCE,
+							xmin:range[0],ymin:range[1],xmax:range[2],ymax:range[3]};
+						init_stream(params,true,loadGeoJsonDataArray); //true TODO
+					} else {
+						console.log('Layer '+l.name+' not in zoom range');
+						data_={type: "FeatureCollection", features: []}
+						
+						if(map.getSource(l.name))
+							map.getSource(l.name).setData(data_);
+					}
+				}				
+				
+				
+         }
+
+
+	document.addEventListener("DOMContentLoaded", async () => {
+        // basic MapLibre map
+        let mapconfig={
+            container: "map",
+			style: {
+					'version': 8,
+					'sources': {
+						'raster-tiles': {
+							'type': 'raster',
+							"tiles": [
+							"https://servicios.idee.es/wmts/ocupacion-suelo?layer=LC.LandCoverSurfaces&style=LC.LandCoverSurfaces.Default&tilematrixset=EPSG:3857&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image%2Fpng&TileMatrix={z}&TileCol={x}&TileRow={y}"
+							//"https://www.ign.es/wmts/pnoa-ma?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=OI.OrthoimageCoverage&STYLE=default&TILEMATRIXSET=EPSG:3857&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image/jpeg"
+							],
+							"tileSize": 256,
+							"attribution": "© Instituto Geografico Nacional"
+						}
+					},
+					'glyphs': 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+					'layers': [
+						{
+							'id': 'simple-tiles',
+							'type': 'raster',
+							'source': 'raster-tiles',
+							'minzoom': 0,
+							'maxzoom': 22
+						}
+					]
+				},
+			
+            center: initial_coordinates,
+            zoom: initial_zoom,
+            maxZoom: maxZoom,
+            minZoom: minZoom,
+        };
+		if(document.location.href.indexOf('?edificios_madrid')>=0){
+			mapconfig={...mapconfig,
+				pitch: 60,      // inclinación (0 = cenital, 60-70 = 3D)
+				bearing: 10,   // rotación opcional -20
+				antialias: true 
+			}
+		};
+		map = new maplibregl.Map(mapconfig);
+		
+		
+		 
+
+
+		 function addLayerToMap(file_name,CLICK_TEMPLATE,geometry_type){
+							map.addSource(file_name, {
+								type: "geojson",
+								data: {type: "FeatureCollection", features: []},
+							});
+							
+							let layer_data={
+								id: file_name+'_layer',
+								source: file_name,
+							};
+
+							if(geometry_type=='Line'){
+								layer_data.type="line"; //"fill-extrusion"fill
+								layer_data.paint={
+									"line-color": "#0000ee",
+									"line-width": 1
+								};
+							}
+
+							if(geometry_type=='Polygon'){
+								layer_data.type='fill';
+								layer_data.paint={
+									"fill-color": ['concat', '#' ,['get','color']],//'#0000ee'
+									"fill-outline-color": '#eeee00',
+									"fill-opacity": [
+										"case",
+										["boolean", ["feature-state", "hover"], false],
+										0.8,
+										0.4
+									]
+								}
+							}
+							
+							if(geometry_type=='Extrusion'){
+							layer_data.type='fill-extrusion';
+								layer_data.paint={
+										// El color de la extrusión
+										//'fill-extrusion-color': ['concat', '#' ,['get','color']],
+										'fill-extrusion-color': '#eeeeee',
+
+										// **La clave:** Obtener la altura del atributo 'altura' del GeoJSON
+										//'fill-extrusion-height': 60, 
+										//'fill-extrusion-height': ['get', 'texture'], 
+										'fill-extrusion-height': ['/',[
+											'-',
+											['to-number', ['get', 'ETIQUETA'], 650],
+											 500
+											],3],
+
+										// (Opcional) La altura base, si no es 0
+										'fill-extrusion-base': 0, 
+
+										// Opacidad
+										'fill-extrusion-opacity': 0.80,
+								}
+							}
+							
+							map.addLayer(layer_data);
+							
+							
+							
+							map.on("click", file_name+"_layer", (e) => {
+								const props = e.features[0].properties;
+								const html = my_tooltip=fillTemplate(CLICK_TEMPLATE, props);
+								new maplibregl.Popup()
+									.setLngLat(e.lngLat)
+									.setHTML(html)
+									.addTo(map);
+							});
+							
+							
+							let hoveredStateId = null;
+							
+							map.on("mousemove", file_name+"_layer", (e) => {
+								if (e.features.length > 0) {
+									if (hoveredStateId !== null) {
+										map.setFeatureState(
+											{ source: file_name, id: hoveredStateId },
+											{ hover: false }
+										);
+									}
+									hoveredStateId = e.features[0].id;
+									map.setFeatureState(
+										{ source: file_name, id: hoveredStateId },
+										{ hover: true }
+									);
+								}
+							});
+
+							map.on("mouseenter", file_name+"_layer", () => {
+								map.getCanvas().style.cursor = "pointer";
+							});
+
+							map.on("mouseleave", file_name+"_layer", () => {
+								map.getCanvas().style.cursor = "";
+								if (hoveredStateId !== null) {
+									map.setFeatureState(
+										{ source: file_name, id: hoveredStateId },
+										{ hover: false }
+									);
+								}
+								hoveredStateId = null;
+							});
+		 
+		}
+
+		 map.on('load', () =>{
+							for(let l of layer_data)
+								addLayerToMap(l.name,l.CLICK_TEMPLATE,l.geometry_type);
+							
+
+							map.on("moveend", function(s){
+								updateResults();
+							});
+							
+							//updateResults();
+							
+			});
+
+	});
+
+    default_init(updateResults,clearOldData);
+
+</script>
+
+
+<body>
+    <div id="map"></div>
+</body>
+</html>
+

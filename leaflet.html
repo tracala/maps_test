@@ -1,0 +1,171 @@
+<html>
+<head>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="site.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+    <script language="javascript" src="js/utils_c.js"></script>
+    <script language="javascript" src="js/simbology.js"></script>
+    <script language="javascript" src="js/utils.js"></script>
+    <script src="config.js"></script>
+
+    <style>
+        #map { height: 100%; width:100%}
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+
+    let textures=[];
+
+    let previousResults=null;
+    let screen_width;
+    
+    
+
+    function loadFeature(feature,click_template){
+                        // Leaflet styling
+                        const defaultStyle = { 
+                            color: '#' + feature.properties["color"], 
+                            //color: '#00ee00', 
+                            weight: 1, 
+                            fillOpacity: 0.4,
+                        };
+                        //Etiquetado
+                        L.geoJSON(feature, {
+                            style: defaultStyle,
+                        }).on({
+                            'mouseover': function(e) {
+                                const layer = e.target;
+                                layer.setStyle({
+                                    weight: 4,
+                                    fillOpacity: 0.8,
+                                });
+                            },
+                            'mouseout': function(e) {
+                                const layer = e.target;
+                                layer.setStyle(defaultStyle);
+                            }
+                    }).bindPopup(fillTemplate('<h3>'+click_template+'</h3>', feature.properties)).addTo(previousResults);
+            }
+    
+    
+    /*
+    function loadGeoJsonDataArray_old(ar,layer_name){
+            let click_template=layer_data.filter(l=>l.name==layer_name)[0].CLICK_TEMPLATE;
+            for(const feature of ar) {
+                loadFeature(feature,click_template);
+            }
+    }
+    */
+
+
+    function loadGeoJsonDataArray(geojsonFeatures,layer_name){
+        let d=layer_data.filter(l=>l.name==layer_name)[0];    
+        let click_template=d.CLICK_TEMPLATE;
+        let color=d.color;
+        const geojsonLayer = L.geoJSON(geojsonFeatures, {
+            // 🎨 Opciones de Estilo (solo para polígonos/líneas)
+            style: function (feature) {
+                return {
+                    color: '#'+feature.properties.color,
+                    weight: 2,
+                    opacity: 0.85
+                };
+            },
+
+
+            // 📝 Eventos y Popups (Función llamada por cada feature)
+            onEachFeature: function (feature, layer) {
+                if (feature.properties) {
+                    // Vincula el contenido del popup
+                    layer.bindPopup(fillTemplate('<h3>'+click_template+'</h3>', feature.properties));
+                }
+            }
+        });
+
+        // Finalmente, añade la capa al mapa
+        geojsonLayer.addTo(previousResults); //map
+    }
+
+    
+
+    function getBoundingBox3857() {
+        const b = map.getBounds();
+        return [epsg4326ToEpsg3857([b.getWest(),b.getSouth()]),epsg4326ToEpsg3857([b.getEast(),b.getNorth()])].flatMap(x=>x);
+    }
+
+    function clearOldData(){
+                // remove the old results
+                previousResults.remove();
+                const nextResults = L.layerGroup().addTo(map);
+                previousResults = nextResults;
+    }
+    
+    /*async function updateResults_() {
+                const range = getBoundingBox3857();
+                let map_width=(range[2]-range[0]);
+                let zoom=27-Math.log2(map_width);
+                console.log('Zoom:'+zoom);
+                let DINAMIC_MIN_DISTANCE=Math.round(map_width/screen_width)*coef;        
+
+                let command='getStream';
+                for(let l of layer_data){
+                    if((zoom>=l.min_zoom) && (zoom<=l.max_zoom)){
+                        let params={command:command,LAYER_TO_LOAD:l.name,DINAMIC_MIN_DISTANCE:DINAMIC_MIN_DISTANCE,
+                            xmin:range[0],ymin:range[1],xmax:range[2],ymax:range[3]};
+                        init_stream(params,true,loadGeoJsonDataArray); 
+                    } else {
+                        console.log('Layer '+l.name+' not in zoom range');
+                    }
+                }				
+
+    }
+    */
+
+    
+    function getNewMap(m_petition){
+                    let range=getBoundingBox3857();
+                    getNewMapGen(m_petition,range,screen_width,null);
+                    
+    }
+
+
+    // if the user is panning around alot, only update once per second max
+    updateResults = debounce(default_update_results, 500); //throttle
+
+
+
+
+    async function init_map(){
+            // basic OSM Leaflet map
+            map = L.map('map').setView(initial_coordinates.reverse(), initial_zoom);
+            debug=map;
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: maxZoom,
+                minZoom: minZoom,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+
+            // track the previous results so we can remove them when adding new results
+            previousResults = L.layerGroup().addTo(map);
+            screen_width=map.getContainer().clientWidth;
+
+            
+            // ...and update the results whenever the map moves
+            map.on("moveend zoomend", updateResults);
+        };
+    
+
+        document.addEventListener("DOMContentLoaded", async () => { 
+            init_map();
+        });
+
+        default_init(updateResults,clearOldData);
+
+    </script>
+</body>
+</html>

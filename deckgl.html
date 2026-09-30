@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+
+    <script language="javascript" src="js/utils_c.js?v=1.1"></script>
+    <script language="javascript" src="js/simbology.js"></script>
+    <script language="javascript" src="js/utils.js?v=1.1"></script>
+    <script language="javascript" src="config.js?v=1.1"></script>
+
+    <link rel="manifest" href="./manifest.json">
+    <script src="https://unpkg.com/deck.gl@9.3.4/dist.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+    }
+
+    #map {
+      width: 100vw;
+      height: 100vh;
+      background: #ffffff;
+    }
+  </style>
+</head>
+
+<body>
+<div id="map"></div>
+
+<script>
+
+const {DeckGL, FillStyleExtension, GeoJsonLayer, WebMercatorViewport} = deck;
+
+const extruded=document.location.href.indexOf('?edificios_madrid')>=0;
+const C_DELAY=100;
+
+
+
+let m_layer_data=[];
+let counter=0;
+
+
+function delete_layers(l){
+  let params={command:'deletebitmapindex',LAYER_TO_LOAD:s};
+  if(workers[s]) workers[s].postMessage(params);else console.log('No se encuentra worker');
+
+  m_layer_data=m_layer_data.filter(f=>!f.id.startsWith(l));
+  deckgl.setProps({
+      layers: m_layer_data
+  });
+}
+
+function clearOldData(){
+    console.log('clearOldData');
+    counter=0;
+    m_layer_data=[];
+    deckgl.setProps({
+        layers: m_layer_data
+  });
+}
+
+function getHeight(l){
+    let f=650;
+    if(!isNaN(l)) f=parseFloat(l);
+    f-=500;
+    f/=3;
+    return f;
+}
+
+
+
+function loadGeoJsonDataArray(ar,layer_name){
+    
+	//m_layer_data.push(...ar);
+
+    counter+=1;
+    let l_layer={
+        id: layer_name+'_'+counter,
+        data:ar,
+        pickable: true,
+        filled: true,
+    };
+    if(extruded){
+      l_layer={...l_layer,
+        extruded: true,
+
+        getElevation: f => getHeight(f.properties.ETIQUETA),  
+        getFillColor: f =>   [120,200,10] 
+      }
+      }else{
+        l_layer={...l_layer,
+        widthUnits: 'pixels',
+        getLineWidth: 2,
+        getLineColor: [0,0,0],
+        extruded: false,
+
+        getFillColor: f =>   hexToRgbaArray(f.properties.color, 0.7)
+        }
+    }
+
+
+		if(withPattern(layer_name)){
+			let dd={
+				id: 'capa-'+layer_name+'_bp_'+counter,
+				data: { type: "FeatureCollection", features:ar },
+				filled: true,
+				pickable: false,
+				widthUnits: 'pixels',
+				getLineWidth: 2,
+				getLineColor: [0,0,0],
+				extruded: false,
+				getFillColor: d => hexToRgbaArray(swap_color(d.properties.color),0.7),
+
+
+				fillPatternMask : true,
+				fillPatternAtlas: './pattern/pattern.png',
+				fillPatternMapping: './pattern/pattern.json',
+				getFillPattern: (f, {index}) => patterns[f.id % 4], //index % 4
+				getFillPatternScale: 1,
+				getFillPatternOffset: [0, 0],
+
+				// Define extensions
+				extensions: [new deck.FillStyleExtension({pattern: true})]
+
+
+			}
+			let layer_pattern=new deck.GeoJsonLayer(dd);
+      m_layer_data.push(layer_pattern);
+
+		}
+
+
+
+    let layer = new GeoJsonLayer(l_layer);
+  
+  m_layer_data.push(layer);
+
+  deckgl.setProps({
+    layers: [m_layer_data]
+  });
+
+}
+
+
+
+
+
+function bboxFromViewStateOLD(viewState) {
+
+  // tamaño aproximado del mundo visible en función del zoom
+  const COEF=2;
+  const scale = Math.pow(2, viewState.zoom-COEF);
+
+  const lngDelta = 360 / scale;
+  const latDelta = 360 / scale;
+
+  return [epsg4326ToEpsg3857([viewState.longitude - lngDelta / 2,viewState.latitude - latDelta / 2]),epsg4326ToEpsg3857([viewState.longitude + latDelta / 2,viewState.latitude + lngDelta / 2])].flatMap(x=>x);
+}
+
+
+function getNewMap(m_petition){
+
+        //console.log('m_petition',m_petition);
+        let range=new WebMercatorViewport(deckgl.props.viewState).getBounds();
+        //console.log(range);
+        range=[epsg4326ToEpsg3857([range[0],range[1]]),epsg4326ToEpsg3857([range[2],range[3]])].flatMap(x=>x);
+        //console.log(range);
+        
+
+        let screen_width=deckgl.props.viewState.width; //;document.getElementById('map').clientWidth;
+        let map_width=(range[2]-range[0]);
+
+        let DINAMIC_MIN_DISTANCE=Math.round(map_width/screen_width)*coef;
+        let zoom=deckgl.props.viewState.zoom;
+        let command='getStream';
+
+
+        for(let l of layer_data){
+            if((zoom>=l.min_zoom) && (zoom<=l.max_zoom)){
+                //console.log('Layer '+l.name+' in zoom range');
+                let params={command:command,LAYER_TO_LOAD:l.name,DINAMIC_MIN_DISTANCE:DINAMIC_MIN_DISTANCE,
+                    xmin:range[0],ymin:range[1],xmax:range[2],ymax:range[3],petition:m_petition};
+                init_stream(params,true,loadGeoJsonDataArray); //true TODO
+            } else {
+                console.log('Layer '+l.name+' not in zoom range');
+                delete_layers(l.name);
+            }
+        }				
+}
+
+function updateResults_(){
+    for(let l of layer_data){
+      let params={command:'cancel',LAYER_TO_LOAD:l.name};
+      if(workers[l.name]) workers[l.name].postMessage(params);else console.log('No se encuentra worker');
+    }
+}
+
+// inicialización
+let m_initialViewState={
+    longitude: initial_coordinates[0],
+    latitude: initial_coordinates[1],
+    zoom: initial_zoom,
+}
+
+if(extruded){
+    m_initialViewState={...m_initialViewState,
+        pitch: 60,
+        bearing: 10
+    }
+}
+
+
+
+let updateResults = getUpdateResultsFunction(updateResults_,C_DELAY,false);
+default_init(updateResults,clearOldData);
+
+
+const deckgl = new DeckGL({
+  container: 'map',
+
+  initialViewState: m_initialViewState,
+  clearColor: [200,200,200],
+
+  controller: true,
+
+  onViewStateChange: ({viewState}) => {
+
+    deckgl.setProps({ viewState });
+    updateResults();
+
+  }
+});
+
+</script>
+</body>
+</html>

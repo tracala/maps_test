@@ -1,0 +1,196 @@
+<html>
+<head>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="site.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script src="https://unpkg.com/pixi.js@7.2.0/dist/pixi.min.js"></script>
+
+    <!-- Leaflet.PixiOverlay -->
+    <script src="https://unpkg.com/leaflet-pixi-overlay"></script>
+
+  
+    <script language="javascript" src="js/utils_c.js"></script>
+    <script language="javascript" src="js/simbology.js"></script>
+    <script language="javascript" src="js/utils.js"></script>
+    <script src="config.js"></script>
+
+    <style>
+        #map { height: 100%; width:100%}
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+
+    let textures=[];
+
+    let previousResults=null;
+    let screen_width;
+
+    let utils;
+
+    //let data_to_draw=[];
+    
+
+
+function loadGeoJsonDataArray(arr) {
+    const container = utils.getContainer();
+    const renderer = utils.getRenderer();
+    const project = utils.latLngToLayerPoint;
+
+    arr.forEach(f => {
+        const geom = f.geometry;
+        const fillColor = f.properties.color; //parseInt(f.properties.color, 16);
+
+        if (geom.type === "Polygon") {
+            const mesh = polygonToMesh(geom.coordinates, fillColor, project);
+            container.addChild(mesh);
+
+        } else if (geom.type === "MultiPolygon") {
+            geom.coordinates.forEach(poly => {
+                const mesh = polygonToMesh(poly, fillColor, project);
+                container.addChild(mesh);
+            });
+        }
+    });
+
+    renderer.render(container);
+}
+
+function polygonToMesh(rings, fillColor, project) {
+    let vertices = [];
+    let holes = [];
+    let holeIndex = 0;
+
+    rings.forEach((ring, i) => {
+        if (i > 0) {
+            holeIndex += rings[i - 1].length;
+            holes.push(holeIndex);
+        }
+
+        ring.forEach(([lng, lat]) => {
+            const p = project([lat, lng]);
+            vertices.push(p.x, p.y);
+        });
+    });
+
+    // Triangulación con earcut
+    const indices = PIXI.utils.earcut(vertices, holes);
+
+    // Crear buffers
+    const positions = new Float32Array(vertices);
+    const indexBuffer = new Uint32Array(indices);
+
+    const uvs = new Float32Array(positions.length); // mismo tamaño, todo en 0
+
+    const geometry = new PIXI.Geometry()
+    .addAttribute("aVertexPosition", positions, 2)
+    .addAttribute("aTextureCoord", uvs, 2)   // ← UVs ficticias
+    .addIndex(indexBuffer);
+    
+    const material = new PIXI.MeshMaterial(PIXI.Texture.WHITE, {
+        tint: fillColor,
+    });
+
+    const mesh = new PIXI.Mesh(geometry, material);
+    mesh.alpha = 0.55;
+
+    return mesh;
+}
+
+function addStroke(rings, project, container) {
+    const g = new PIXI.Graphics();
+    g.lineStyle(0.01, 0x333333, 0.8);
+
+    rings.forEach(ring => {
+        ring.forEach(([lng, lat], i) => {
+            const p = project([lat, lng]);
+            if (i === 0) g.moveTo(p.x, p.y);
+            else g.lineTo(p.x, p.y);
+        });
+        g.closePath();
+    });
+
+    container.addChild(g);
+}
+
+
+
+    
+
+    function getBoundingBox3857() {
+        const b = map.getBounds();
+        return [epsg4326ToEpsg3857([b.getWest(),b.getSouth()]),epsg4326ToEpsg3857([b.getEast(),b.getNorth()])].flatMap(x=>x);
+    }
+
+    function clearOldData(){
+        // remove the old results
+        const container = utils.getContainer();
+        container.removeChildren();
+
+    }
+    
+
+    
+    function getNewMap(m_petition){
+                    let range=getBoundingBox3857();
+                    getNewMapGen(m_petition,range,screen_width,null);
+                    
+    }
+
+
+    updateResults = getUpdateResultsFunction(default_update_results, 1000, false); 
+
+
+
+
+    async function init_map(){
+            // basic OSM Leaflet map
+            map = L.map('map').setView(initial_coordinates.reverse(), initial_zoom);
+            debug=map;
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: maxZoom,
+                minZoom: minZoom,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+
+            // track the previous results so we can remove them when adding new results
+            previousResults = L.layerGroup().addTo(map);
+            screen_width=map.getContainer().clientWidth;
+
+            
+            // ...and update the results whenever the map moves
+            map.on("moveend zoomend", updateResults);
+        };
+    
+
+
+function init_pixi_map(){
+            const pixiContainer = new PIXI.Container();
+
+            // 3️⃣ Función principal de render
+            const drawGeoJSON = async (utils_) => {
+                utils=utils_;
+                //drawData(data_to_draw);
+                updateResults();
+            };
+
+            // 4️⃣ Crear overlay Pixi en Leaflet
+            const pixiOverlay = L.pixiOverlay(drawGeoJSON, pixiContainer, { doubleBuffering: true });
+            pixiOverlay.addTo(map);
+
+}
+
+        document.addEventListener("DOMContentLoaded", async () => { 
+            init_map();
+            init_pixi_map();
+        });
+
+        default_init(updateResults,clearOldData);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "Mapa Offline",
+  "short_name": "Mapa",
+  "start_url": "./maplibre_deckgl.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2c3e50"
+}

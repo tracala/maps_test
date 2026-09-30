@@ -1,0 +1,223 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Cesium</title>
+    <!-- Importar biblioteca Cesium -->
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.145/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.145/Build/Cesium/Widgets/widgets.css" rel="stylesheet" type="text/css"></link>
+
+
+    <script language="javascript" src="js/utils_c.js"></script>
+    <script language="javascript" src="js/simbology.js"></script>
+    <script language="javascript" src="js/utils.js"></script>
+    <script language="javascript" src="config.js"></script>
+
+</head>
+
+
+
+<body>
+<!-- Contenedor del visor Cesium -->
+<div id="cesiumContainer">
+</div>
+
+
+
+<script>
+
+let  debug_entity,debug_dataSource,debug_data;
+
+
+const lat=initial_coordinates[1];
+const lon=initial_coordinates[0];
+const dd=Math.pow(2,27-initial_zoom); //5000.0
+coef=50;
+
+
+//const EXPAND_BBOX=75;
+
+
+Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxODE5Y2I3Mi1mYjc3LTQ3ZjktYmRhMi0yMTQxYWM3OWEwNWEiLCJpZCI6MzcwMSwic2NvcGVzIjpbImFzciIsImdjIl0sImlhdCI6MTUzODU2NzIzM30.KMDydR9QeIZYHAP_d3sxLxUwzN9NPSFtECse-SD9no0';
+
+
+
+var terrain = Cesium.createDefaultTerrainProviderViewModels();
+var viewer = new Cesium.Viewer('cesiumContainer', {
+    terrainProviderViewModels: terrain,
+    selectedTerrainProviderViewModel: terrain[0]
+});
+
+
+
+
+function getBoundingBox3857_(lng,lat) {
+            let d=0.05;
+			return [epsg4326ToEpsg3857([lng-d,lat-d]),epsg4326ToEpsg3857([lng+d,lat+d])].flatMap(x=>x);
+}
+
+function getBoundingBox3857(north,west,south,east) {
+			return [epsg4326ToEpsg3857([north,west]),epsg4326ToEpsg3857([south,east])].flatMap(x=>x);
+}
+
+
+// Opciones de estilo opcionales
+const options = {
+    // Color de relleno por defecto para los polígonos
+    //fill: Cesium.Color.HOTPINK.withAlpha(0.7), 
+    fill: Cesium.Color.GREEN.withAlpha(0.6),
+    // Color de borde por defecto para los polígonos
+    stroke: Cesium.Color.BLUE, 
+    // Ancho del borde
+    strokeWidth: 2,
+    // Indica si la geometría debe ajustarse al terreno (útil para polígonos 2D)
+    //clampToGround: true,
+    height:1,
+    extrudedHeight:100
+};
+
+
+
+
+function getViewBoundingBox(viewer) {
+    const scene = viewer.scene;
+    const camera = scene.camera;
+    const canvas = scene.canvas;
+
+    // 1. Definir las esquinas de la pantalla
+    // Coordenadas de pantalla (x, y) en píxeles.
+    const screenCorners = [
+        new Cesium.Cartesian2(0, 0),                        // Esquina superior izquierda
+        new Cesium.Cartesian2(canvas.width, 0),             // Esquina superior derecha
+        new Cesium.Cartesian2(0, canvas.height),            // Esquina inferior izquierda
+        new Cesium.Cartesian2(canvas.width, canvas.height)  // Esquina inferior derecha
+    ];
+
+    // 2. Convertir las coordenadas de pantalla a coordenadas del mundo (Cartesian3)
+    // El 'Ellipsoid' es el planeta.
+    const cartesianCorners = [];
+    for (const corner of screenCorners) {
+        // Usa `pickEllipsoid` para obtener el punto en el elipsoide (globo).
+        const cartesian = camera.pickEllipsoid(corner, scene.globe.ellipsoid);
+        if (Cesium.defined(cartesian)) {
+            cartesianCorners.push(cartesian);
+        }
+    }
+    
+    // 3. Crear el Cesium.Rectangle a partir de las coordenadas del mundo
+    if (cartesianCorners.length > 0) {
+        // `fromCartesianArray` calcula el rectángulo que abarca todos los puntos.
+        return Cesium.Rectangle.fromCartesianArray(cartesianCorners, scene.globe.ellipsoid);
+    }
+
+    return undefined;
+}
+
+
+function clearOldData() {
+    viewer.dataSources.removeAll();
+}
+
+function loadGeoJsonData(geojson){
+        //delete geojson.crs;
+        debug_data=geojson;
+        let promise = Cesium.GeoJsonDataSource.load(geojson,options);
+        promise.then(function(dataSource) {
+            debug_dataSource=dataSource;
+            viewer.dataSources.add(dataSource);
+            //Cambiar colores
+            const entities = dataSource.entities.values;
+            for (let entity of entities) {
+                        entity.polygon.material = Cesium.Color.fromCssColorString('#'+entity.properties.color).withAlpha(0.6);
+            }            
+
+        }).catch(function(error){
+            console.error(error);
+            console.error(': No se cumplio la promesa...');
+        });
+
+}
+
+function loadGeoJsonDataArray(ar){
+    let geojson={
+        "type": "FeatureCollection",
+        "features": ar
+    };
+    loadGeoJsonData(geojson);
+}
+
+/*
+function updateResults_(){
+    const currentBoundingBox = getViewBoundingBox(viewer);
+
+    if (Cesium.defined(currentBoundingBox)) {
+        // Convertir el rectángulo a coordenadas de latitud y longitud para uso externo
+        const west = Cesium.Math.toDegrees(currentBoundingBox.west);
+        const south = Cesium.Math.toDegrees(currentBoundingBox.south);
+        const east = Cesium.Math.toDegrees(currentBoundingBox.east);
+        const north = Cesium.Math.toDegrees(currentBoundingBox.north);
+
+        //console.log("Bounding Box (W, S, E, N):", west, south, east, north);        
+        let range=getBoundingBox3857(west,south,east,north);
+        let map_width=(range[2]-range[0]);
+
+        let screen_width=viewer._container.clientWidth;
+        let DINAMIC_MIN_DISTANCE=Math.round(map_width/screen_width)*coef;
+        
+        let zoom=getZoomFromScale(map_width)+12;
+        let command='getStream';
+
+        for(let l of layer_data){
+            if((zoom>=l.min_zoom) && (zoom<=l.max_zoom)){
+                let params={command:command,LAYER_TO_LOAD:l.name,DINAMIC_MIN_DISTANCE:DINAMIC_MIN_DISTANCE,
+                    xmin:range[0],ymin:range[1],xmax:range[2],ymax:range[3]};
+                init_stream(params,true,loadGeoJsonDataArray); 
+            } else {
+                console.log('Layer '+l.name+' not in zoom range');
+            }
+        }				        
+                            
+    } else console.log('Fuera del planeta');
+
+}
+*/
+
+        function getNewMap(m_petition){
+
+            const currentBoundingBox = getViewBoundingBox(viewer);
+
+            if (Cesium.defined(currentBoundingBox)) {
+                // Convertir el rectángulo a coordenadas de latitud y longitud para uso externo
+                const west = Cesium.Math.toDegrees(currentBoundingBox.west);
+                const south = Cesium.Math.toDegrees(currentBoundingBox.south);
+                const east = Cesium.Math.toDegrees(currentBoundingBox.east);
+                const north = Cesium.Math.toDegrees(currentBoundingBox.north);
+
+                //console.log("Bounding Box (W, S, E, N):", west, south, east, north);        
+                let range=getBoundingBox3857(west,south,east,north);
+
+                let screen_width=viewer._container.clientWidth;
+                getNewMapGen(m_petition,range,screen_width,null);
+                                    
+            } else console.log('Fuera del planeta');
+
+        }
+
+
+    updateResults=getUpdateResultsFunction(default_update_results);
+
+
+    viewer.camera.flyTo({
+            destination : Cesium.Cartesian3.fromDegrees(lon,lat, dd)
+        });
+
+
+        viewer.camera.changed.addEventListener(function () {
+            updateResults();
+        });
+
+    default_init(updateResults,clearOldData);
+    
+</script>
+</body>
+</html>

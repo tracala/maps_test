@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta charset='utf-8'>
+  <title>Gleo Map</title>
+  
+  <script type="importmap">
+  {
+    "imports": {
+      "gleo/": "https://unpkg.com/gleo/src/"
+    }
+  }
+  </script>
+  
+  <script language="javascript">
+	
+	const ZOOM_SPEED=2;
+	const MINSPAN=3000;
+	const opacity='aa';
+	const lines_opacity='ff';
+  
+  </script>
+
+	<script language="javascript" src="js/utils_c.js"></script>
+  <script language="javascript" src="js/simbology.js"></script>
+	<script language="javascript" src="js/utils.js"></script>
+	<script language="javascript" src="config.js"></script>
+
+</head>
+<style>
+  .gleo-balloon-body {
+      min-width: 220px;      /* el ancho mínimo que tú quieras */
+      width: max-content;     /* se ajusta al contenido... */
+      max-width: 400px;       /* ...pero sin crecer descontroladamente */
+      white-space: nowrap;    /* evita el salto de línea */
+  }
+</style>
+<body >
+   <div id="gleomap" style="display:block;height: 100vh;width:100%"></div>
+
+  <script type="module">
+  
+
+
+    import MercatorMap   from "gleo/MercatorMap.mjs";
+    import MercatorTiles from "gleo/loaders/MercatorTiles.mjs";
+    import Geometry from 'gleo/geometry/Geometry.mjs';	
+    import GeoJSON from "gleo/loaders/GeoJSON.mjs";
+    import Fill from "gleo/symbols/Fill.mjs";
+    import Stroke from "gleo/symbols/Stroke.mjs";
+    import Balloon from "gleo/pin/Balloon.mjs";
+
+
+  	import { setFactory, factory } from "gleo/geometry/DefaultGeometry.mjs";
+
+
+    const MAP_COEF=1.5;
+    
+    const map = new MercatorMap("gleomap", {
+	  center: initial_coordinates.reverse(),
+      span:   Math.pow(2,27-initial_zoom), //500000,
+      maxSpan: 20e7,
+	  minSpan: MINSPAN,
+	  wheelPxPerZoomLog2: 1000/ZOOM_SPEED
+    });
+	
+
+
+    new MercatorTiles("https://tile.osm.org/{z}/{x}/{y}.png", {
+      attribution: "<a href='http://osm.org/copyright'>© OSM contributors</a>"
+    }).addTo(map);
+
+
+    let currentBalloon; // para poder quitar el anterior
+
+function change_color(color){
+	return color.substring(0,2)+color.substring(4,6)+color.substring(2,4);
+}
+
+    let geojson=[];
+    let map_width;
+
+    function drawData(d,click_template){
+      geojson[geojson.length]=new GeoJSON(d, {
+        polygonSymbolizer: function (feature, geom) {
+              const fill=new Fill(geom, {colour:'#'+feature.properties.color+opacity, cursor:'pointer',interactive:true});
+              fill.on('click', (ev) => {
+                let html=fillTemplate(click_template, feature.properties);
+                html='<div>'+html+'</div>';
+                console.log('html',html);
+                if (currentBalloon) currentBalloon.remove();
+
+                currentBalloon = new Balloon(ev.geometry,html).addTo(map);
+
+              });
+                  
+                return [
+                    //new Fill(geom, {colour:'#77ff77'+opacity}), //'#'+feature.properties.color
+                    fill,
+                    new Stroke(geom, {colour:'#ee3333'+opacity, width:2})
+                  ]
+                  
+          },
+        lineSymbolizer: function (feature, geom) {
+          return false?new Stroke(geom, {colour:'#2233ee'+lines_opacity, width:2}):new Stroke(geom, {colour:'#2233ee'+'11', width:8});
+        }
+    }).addTo(map);	
+
+    }
+
+    function loadGeoJsonDataArray(ar,layer_name){
+        //console.log(layer_name+' loaded '+ar.length+' features');
+        let d=layer_data.filter(l=>l.name==layer_name)[0];    
+        let click_template=d.CLICK_TEMPLATE;
+
+        drawData({
+            "type": "FeatureCollection",
+            "features": ar
+        },click_template);
+    }
+
+
+function clearOldData(){
+  clearOldDataAUX(geojson);
+}
+
+
+/*
+function updateResults_(){
+	
+	let range=map.bbox;
+	let screen_width=map.container.clientWidth;
+	map_width=(range.maxX-range.minX);
+
+	let DINAMIC_MIN_DISTANCE=Math.round(map_width/screen_width)*coef*MAP_COEF;
+    let command='getStream';
+    let zoom=getZoomFromScale(map.scale);
+
+    for(let l of layer_data){
+      if((zoom>=l.min_zoom) && (zoom<=l.max_zoom)){
+        let params={command:command,LAYER_TO_LOAD:l.name,DINAMIC_MIN_DISTANCE:DINAMIC_MIN_DISTANCE,
+            xmin:range.minX,ymin:range.minY,xmax:range.maxX,ymax:range.maxY};
+        init_stream(params,true,loadGeoJsonDataArray);
+      } else console.log('Layer '+l.name+' not in zoom range');
+    }
+}
+*/
+
+export function getNewMap(m_petition){
+        let range_=map.bbox;
+        let range=[range_.minX,range_.minY,range_.maxX,range_.maxY];
+				let screen_width=map.container.clientWidth;
+				getNewMapGen(m_petition,range,screen_width,null,8,loadGeoJsonDataArray);
+}
+
+
+    let updateResults=getUpdateResultsFunction(default_update_results);
+    debug=map;
+    map.on('viewchanged',updateResults);
+    
+    default_init_multiworker2(updateResults,clearOldData,getNewMap);
+
+
+  </script>
+</body>
+</html>
