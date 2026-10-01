@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<meta charset='utf-8'>
+
+<script language="javascript" src="js/utils_c.js"></script>
+<script language="javascript" src="js/simbology.js"></script>
+<script language="javascript" src="js/utils.js"></script>
+<script language="javascript" src="config.js"></script>
+
+<link rel="manifest" href="./manifest.json">
+<link rel='stylesheet' href='https://unpkg.com/maplibre-gl@6.11.2/dist/maplibre-gl.css' />
+
+
+<style>
+	#map { height: 100vh}
+</style>
+
+<script language="javascript">
+	function clearOldData(){
+		layer_content=[];
+	}
+
+let layer_content=[];
+
+const C_DELAY=50;
+
+
+
+function loadGeoJsonDataArray(ar,layer_name){
+	//console.log('loadGeoJsonDataArray',ar.length);
+    if(!layer_content[layer_name]) layer_content[layer_name]=[];
+	//layer_content[layer_name]=layer_content[layer_name].concat(ar);
+	layer_content[layer_name].push(...ar);
+    
+    if(map.getSource(layer_name)){
+		map.getSource(layer_name).setData({
+			"type": "FeatureCollection",
+			"features": layer_content[layer_name]
+		});
+
+	} else console.warn('Source '+layer_name+' not found in map');
+}
+
+
+
+
+
+function getBoundingBox3857() {
+			const { _sw, _ne } = map.getBounds();
+			return [epsg4326ToEpsg3857([_sw.lng,_sw.lat]),epsg4326ToEpsg3857([_ne.lng,_ne.lat])].flatMap(x=>x);
+}
+
+
+function fgBoundingBox() {
+			const { _sw, _ne } = map.getBounds();
+			return { minX: _sw.lng, minY: _sw.lat, maxX: _ne.lng, maxY: _ne.lat};
+}
+
+
+
+
+
+let cleanLayer = function(layer_name){
+	console.log('Layer '+layer_name+' not in zoom range');
+	if(map.getSource(layer_name)){
+		map.getSource(layer_name).setData({
+			"type": "FeatureCollection",
+			"features": []
+		});
+	} else console.warn('Source '+layer_name+' not found in map');
+}
+
+
+
+
+function getNewMap(m_petition){
+                let range=getBoundingBox3857();
+				let screen_width=map._container.clientWidth;
+				//let zoom=map.getZoom();
+				getNewMapGen(m_petition,range,screen_width,cleanLayer);
+				
+}
+
+
+
+</script>
+
+<script type="module">
+
+import * as maplibregl from 'https://unpkg.com/maplibre-gl@6.11.2/dist/maplibre-gl.mjs';
+
+
+	document.addEventListener("DOMContentLoaded", async () => {
+        // basic MapLibre map
+        let mapconfig={
+            container: "map",
+            center: initial_coordinates,
+            zoom: initial_zoom,
+            maxZoom: maxZoom,
+            minZoom: minZoom,
+        };
+
+		
+		if(base_layer.length>0){
+			mapconfig.style= {
+					'version': 8,
+					'sources': {
+						'raster-tiles': {
+							'type': 'raster',
+							"tiles": [ base_layer],
+							"tileSize": 256,
+							"attribution": "Instituto Geografico Nacional"
+						}
+					},
+					'glyphs': 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+					'layers': [
+						{
+							'id': 'simple-tiles',
+							'type': 'raster',
+							'source': 'raster-tiles',
+							'minzoom': 0,
+							'maxzoom': 22
+						}
+					]
+				}
+				}
+				else {
+					mapconfig.style= {
+						'version': 8,
+						'sources': {},
+						'glyphs': 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+						'layers': []
+					};
+				}
+
+			
+
+		if(document.location.href.indexOf('?edificios_madrid')>=0){
+			mapconfig={...mapconfig,
+				pitch: 60,      // inclinación (0 = cenital, 60-70 = 3D)
+				bearing: 10,   // rotación opcional -20
+				antialias: true 
+			}
+		};
+		map = new maplibregl.Map(mapconfig);
+		
+		
+		 
+
+
+		 function addLayerToMap(file_name,CLICK_TEMPLATE,geometry_type,label){
+							map.addSource(file_name, {
+								type: "geojson",
+								data: {type: "FeatureCollection", features: []},
+							});
+							
+							let layer_data={
+								id: file_name+'_layer',
+								source: file_name,
+							};
+
+							if(geometry_type=='Line'){
+								layer_data.type="line"; //"fill-extrusion"fill
+								layer_data.paint={
+									"line-color": "#0000ee",
+									"line-width": 1
+								};
+							}
+
+							if(geometry_type=='Polygon'){
+								layer_data.type='fill';
+								layer_data.paint={
+									"fill-color": ['concat', '#' ,['get','color']],//'#0000ee'
+									"fill-outline-color": '#eeee00',
+									"fill-opacity": [
+										"case",
+										["boolean", ["feature-state", "hover"], false],
+										0.8,
+										0.4
+									]
+								}
+							}
+							
+							if(geometry_type=='Extrusion'){
+							layer_data.type='fill-extrusion';
+								layer_data.paint={
+										// El color de la extrusión
+										'fill-extrusion-color': ['concat', '#' ,['get','color']],
+										//'fill-extrusion-color': '#eeeeee',
+
+										// **La clave:** Obtener la altura del atributo 'altura' del GeoJSON
+										//'fill-extrusion-height': 60, 
+										//'fill-extrusion-height': ['get', 'texture'], 
+										'fill-extrusion-height': ['/',[
+											'-',
+											['to-number', ['get', 'ETIQUETA'], 650],
+											 500
+											],3],
+
+										// (Opcional) La altura base, si no es 0
+										'fill-extrusion-base': 0, 
+
+										// Opacidad
+										'fill-extrusion-opacity': 0.80,
+								}
+							}
+							
+							map.addLayer(layer_data);
+							
+							console.log('Layer '+file_name+' added to map');		
+							/*
+							map.setLayoutProperty(file_name+'_layer', 'text-field', [
+										'format',
+										['get', 'shapeName'],
+										{'font-scale': 1.2,
+											'text-font': [
+												'literal',
+												['Noto Sans Regular']
+											]
+										}
+										]);								
+							*/
+
+							if(label){
+												map.addLayer({
+													'id': "blockes-text_"+file_name,
+													'type': 'symbol',
+													'source': file_name,
+													'layout': {
+														'text-field': ['get', label],
+														'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+														'text-radial-offset': 0.5,
+														'text-justify': 'auto'
+													}
+												});
+											}							
+							
+							map.on("click", file_name+"_layer", (e) => {
+								const props = e.features[0].properties;
+								const html = fillTemplate(CLICK_TEMPLATE, props);
+								new maplibregl.Popup()
+									.setLngLat(e.lngLat)
+									.setHTML(html)
+									.addTo(map);
+							});
+							
+							
+							let hoveredStateId = null;
+							
+							map.on("mousemove", file_name+"_layer", (e) => {
+								if (e.features.length > 0) {
+									if (hoveredStateId !== null) {
+										map.setFeatureState(
+											{ source: file_name, id: hoveredStateId },
+											{ hover: false }
+										);
+									}
+									hoveredStateId = e.features[0].id;
+									map.setFeatureState(
+										{ source: file_name, id: hoveredStateId },
+										{ hover: true }
+									);
+								}
+							});
+
+							map.on("mouseenter", file_name+"_layer", () => {
+								map.getCanvas().style.cursor = "pointer";
+							});
+
+							map.on("mouseleave", file_name+"_layer", () => {
+								map.getCanvas().style.cursor = "";
+								if (hoveredStateId !== null) {
+									map.setFeatureState(
+										{ source: file_name, id: hoveredStateId },
+										{ hover: false }
+									);
+								}
+								hoveredStateId = null;
+							});
+		 
+		}
+
+		 map.on('load', () =>{
+							for(let l of layer_data)
+								addLayerToMap(l.name,l.CLICK_TEMPLATE,l.geometry_type,l.label);
+
+    						
+							const updateResults= getUpdateResultsFunction(default_update_results,C_DELAY,true);
+
+							default_init(updateResults,clearOldData);
+
+							map.on("move", updateResults);
+							map.on("moveend", default_update_results);
+							
+			});
+
+	});
+
+
+</script>
+
+
+<body>
+    <div id="map"></div>
+</body>
+</html>
+

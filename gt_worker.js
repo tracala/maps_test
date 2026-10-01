@@ -11,7 +11,7 @@ if(isSafari) {console.log('Safari');MAX_ELEMS=1000;}
 
 
 
-const js_list='lib/dexie,lib/topojson-client.min,lib/FastIntegerCompression,lib/Flatbush,lib/FastBitSet,lib/shapefile,lib/cborx,utils_c,simbology,geomGT,worker_opfs,compact2geojson.lite_,compacttp2geojson.lite_'; //cbor,utils,shp2compact,
+const js_list='lib/dexie,lib/topojson-client.min,lib/FastIntegerCompression,lib/Flatbush,lib/FastBitSet,lib/shapefile,lib/cborx,utils_c,simbology,geomGT,compact2geojson.lite_,compacttp2geojson.lite_'; //cbor,utils,shp2compact,
 const ar=js_list.split(',').map(s=>'js/'+s+'.js');
 importScripts.apply(this, ar);
 
