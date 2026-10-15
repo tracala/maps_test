@@ -1,0 +1,57 @@
+
+<html>
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="site.css" />
+	<link rel="stylesheet" href="https://samanbey.github.io/leaflet-mapwithlabels/leaflet-mapwithlabels.css" />	
+
+    <script src="https://unpkg.com/underscore@1.13.1/underscore-min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/flatgeobuf@4.6.0/dist/flatgeobuf-geojson.min.js"></script>
+
+    <script src="https://unpkg.com/json-formatter-js@2.5.23/dist/json-formatter.umd.js"></script>
+	<script src="https://samanbey.github.io/leaflet-mapwithlabels/leaflet-mapwithlabels.js"></script>
+
+    <script>
+		let map;
+		function toHex(d) {
+			d=Math.round(d);
+			if(d>255) d=255;
+			if(d<0) s=0;
+			return  ("0"+(Number(d).toString(16))).slice(-2).toUpperCase()
+		}
+
+		function loadScript(file,onload) {
+		  const newScript = document.createElement('script');
+		  newScript.setAttribute('src', file);
+		  newScript.setAttribute('type', 'text/javascript');
+		  newScript.setAttribute('async', 'true');
+
+		  newScript.onload = () => {console.log(`${file} loaded successfully.`);if(onload) onload()};
+		  newScript.onerror = () => console.error(`Error loading script: ${file}`);
+
+		  document.head.appendChild(newScript);
+		}
+		
+		let l=document.location.pathname;
+		l=l.substring(l.lastIndexOf('/')+1);
+		l=l.replace('.html','');
+		loadScript(l+'.js',function(){loadScript('gis_'+l+'.js',null)});
+		
+
+	</script>
+
+
+    <style>
+        #map { height: 100%; width:100%}
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <div id="header">
+        <h3>Cabecera</h3>
+    </div>
+
+</body>
+</html>
