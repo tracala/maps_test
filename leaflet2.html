@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<base target="_top">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>Leaflet2</title>
+	
+	<link rel="icon" href="docs/images/favicon.svg" type="image/svg+xml" />
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@2.0.0-beta.2/dist/leaflet.css"  crossorigin=""/>
+	<script type="importmap">
+		{
+			"imports": {
+				"leaflet": "https://cdn.jsdelivr.net/npm/leaflet@2.0.0-beta.2/dist/leaflet.js"
+			}
+		}
+	</script>
+
+
+	<style>
+		html, body {
+			height: 100%;
+			margin: 0;
+		}
+		.leaflet-container {
+			height: 100%;
+		}
+	</style>
+
+	
+
+	<script language="javascript" src="js/utils_c.js"></script>
+    <script language="javascript" src="js/simbology.js"></script>
+	<script language="javascript" src="js/utils.js"></script>
+	<script language="javascript" src="config.js"></script>
+
+
+</head>
+<body>
+
+<div id='map'></div>
+
+<script src="leaflet-geojson.js" type="text/javascript"></script><script type="module">
+	import {LeafletMap, TileLayer, GeoJSON,LayerGroup} from 'leaflet';
+
+    let previousResults=null;
+	let map;
+    
+    
+	function highlightFeature(e) {
+		const layer = e.target;
+
+		layer.setStyle({
+			weight: 5,
+			color: '#33AA33',
+			dashArray: '',
+			fillOpacity: 0.7
+		});
+
+		layer.bringToFront();
+	}
+
+	function zoomToFeature(e) {
+		map.fitBounds(e.target.getBounds());
+	}
+
+    function loadGeoJsonDataArray(geojsonFeatures,layer_name){
+        let d=layer_data.filter(l=>l.name==layer_name)[0];    
+        let click_template=d.CLICK_TEMPLATE;
+        let color=d.color;
+
+		function resetHighlight(e) {
+			geojsonLayer.resetStyle(e.target);
+		}
+
+
+		const geojsonLayer = new GeoJSON(geojsonFeatures, {
+            style(feature) {
+                return {
+                    color: '#'+feature.properties.color,
+                    weight: 2,
+                    opacity: 0.65,
+					fillOpacity: 0.65
+                };
+            },
+
+            onEachFeature(feature, layer) {
+                if (feature.properties) {
+                    layer.bindPopup(fillTemplate('<h3>'+click_template+'</h3>', feature.properties));
+                }
+				layer.on({
+					pointerover: highlightFeature,
+					pointerout: resetHighlight,
+					click: zoomToFeature
+				});
+
+            }
+        });
+
+
+        geojsonLayer.addTo(previousResults); 
+    }
+
+    
+
+    function getBoundingBox3857() {
+        const b = map.getBounds();
+        return [epsg4326ToEpsg3857([b.getWest(),b.getSouth()]),epsg4326ToEpsg3857([b.getEast(),b.getNorth()])].flatMap(x=>x);
+    }
+
+    function clearOldData(){
+                previousResults.remove();
+                const nextResults = new LayerGroup().addTo(map);
+                previousResults = nextResults;
+    }
+    
+
+    
+	let v_map={
+		getRange: getBoundingBox3857,
+		getWidth: ()=>{return map.getContainer().clientWidth},
+		loadData: (ar,layer_name)=>{return loadGeoJsonDataArray(ar,layer_name);},
+		cleanLayer: null
+	}
+
+	function getNewMap(m_petition){
+					getNewMapGenV(m_petition,v_map,16);
+	}
+
+
+
+
+	function init_map(){
+		map = new LeafletMap('map').setView(initial_coordinates.reverse(), initial_zoom);
+		//debug=map;
+
+		const tiles = new TileLayer(base_layer, {
+				maxZoom: maxZoom,
+                minZoom: minZoom,
+				attribution: baselayer_attribution
+		}).addTo(map);
+
+		previousResults = new LayerGroup().addTo(map);
+	}
+
+	document.addEventListener("DOMContentLoaded", async () => { 
+		init_map();
+		const   updateResults = debounce(default_update_results, 500); 
+		map.on("moveend zoomend", updateResults);
+		default_init_multiworker2(updateResults,clearOldData,getNewMap);
+	});
+
+
+</script>
+
+
+</body>
+</html>

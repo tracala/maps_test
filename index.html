@@ -79,6 +79,11 @@
         <select id="dato"></select>
     </div>
 
+    <div class="campo">
+        <label for="baseMaps">Mapa Base</label>
+        <select id="baseMaps"></select>
+    </div>
+
     <button id="aceptar">Aceptar</button>
 
 </div>
@@ -86,8 +91,9 @@
 <script>
 
     // Opciones de los desplegables
-    const tipos = "maplibre,maplibre_deckgl,cesium,openlayers,leaflet,maptalks,gleo,leaflet_pixi,maptalks_three,maptalks3d,deckgl".split(',');
-    const datos = "gadm2,edificios_madrid,parroquias,secciones,siose,corine".split(',');
+    const tipos = "maplibre,maplibre_deckgl,cesium,openlayers,leaflet2,leaflet,maptalks,gleo,leaflet_pixi,maptalks_three,maptalks3d,deckgl".split(',');
+    const datos = "gadm2,edificios_madrid,parroquias,secciones,siose,corine,espa_cuencas".split(',');
+    const baseMaps = "pnoa,osm,carto,arcgis,ocupacion_suelo".split(',');
 
 
     // Rellenar desplegable de tipos
@@ -117,14 +123,28 @@
         selectDato.appendChild(option);
     });
 
+    // Rellenar desplegable de datos
+    const selectBaseMaps  = document.getElementById("baseMaps");
+
+    baseMaps.forEach(dato => {
+
+        const option = document.createElement("option");
+
+        option.value = dato;
+        option.textContent = dato;
+
+        selectBaseMaps.appendChild(option);
+    });
+
 
     // Botón Aceptar
     document.getElementById("aceptar").onclick = function () {
 
         const tipo = selectTipo.value;
         const dato = selectDato.value;
+        const baseMap = selectBaseMaps.value;
 
-        window.location.href =encodeURIComponent(tipo) + '.html?'+encodeURIComponent(dato);
+        window.location.href =encodeURIComponent(tipo) + '.html?'+encodeURIComponent(dato) + '&base=' + encodeURIComponent(baseMap);
     };
 
 

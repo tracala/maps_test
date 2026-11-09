@@ -139,7 +139,7 @@ if(murl.indexOf('?cuencas5')>0)
  }else
 if(murl.indexOf('?cuencas')>0)
 	{
-	MIN_ZOOM_FOR_DATA_=7; //12
+	MIN_ZOOM_FOR_DATA_=12; //12
 	LAYER_TO_LOAD_='cuencas';
  	CLICK_TEMPLATE_="<p>Nombre: <b>${Nom_Rio}</b></p><p>Longitud: <b>${LngTramo_m}</b></p>";
 	initial_coordinates=[-5.931243896484375,43.27820513231556];
@@ -151,9 +151,20 @@ if(murl.indexOf('?unidad_geologica')>0)
 	LAYER_TO_LOAD_='unidad_geologica';
  	CLICK_TEMPLATE_="<p>Nombre</p>";
 	initial_coordinates=[-5.931243896484375,43.27820513231556];
-	initial_zoom=7;
+	initial_zoom=LAYER_TO_LOAD_;
 	istopojson=true;
  } else
+if(murl.indexOf('?unidades_geologicas')>0)
+	{
+	MIN_ZOOM_FOR_DATA_=3; //12
+	LAYER_TO_LOAD_='unidades_geologicas';
+ 	CLICK_TEMPLATE_="<p>sigla: <b>${sigla}</b></p><p>nombre: <b>${nombre}</b></p><p>ambiente: <b>${ambiente}</b></p><p>edad_inf: <b>${edad_inf}</b></p><p>edad_sup: <b>${edad_sup}</b></p><p>litologia: <b>${litologia}</b></p><p>region: <b>${region}</b></p><p>unidades: <b>${unidades}</b></p><p>ruleid: <b>${ruleid}</b></p>";
+	initial_coordinates=[-65.26331753001693, -40.721874728411315];
+	initial_zoom=MIN_ZOOM_FOR_DATA_;
+	istopojson=true;
+ } else
+
+	
 if(murl.indexOf('?gadm2')>0)
 	{
 	MIN_ZOOM_FOR_DATA_=3; //12
@@ -233,7 +244,16 @@ if(murl.indexOf('?geoboundaries')>0){
 			{name:'cuencas',min_zoom:7,max_zoom:24,CLICK_TEMPLATE:"<p>Nombre: <b>${Nom_Rio}</b></p><p>Longitud: <b>${LngTramo_m}</b></p>",geometry_type:'Polygon',color:'AA0000'}
 	 ];
 	 }else
-		
+	if(murl.indexOf('?espa_cuencas')>0)
+	{
+		initial_coordinates=[-3.686008,40.47746];
+		initial_zoom=5.5;
+		const LAYER_CHANGE=11
+		layer_data=[
+			{name:'secciones',min_zoom:3,max_zoom:LAYER_CHANGE,CLICK_TEMPLATE:"<p>CUSEC: <b>${CUSEC}</b></p><p>CUMUN: <b>${CUMUN}</b></p><p>CSEC: <b>${CSEC}</b></p><p>CDIS: <b>${CDIS}</b></p><p>CMUN: <b>${CMUN}</b></p><p>CPRO: <b>${CPRO}</b></p><p>CCA: <b>${CCA}</b></p><p>CUDIS: <b>${CUDIS}</b></p><p>CLAU2: <b>${CLAU2}</b></p><p>NPRO: <b>${NPRO}</b></p><p>NCA: <b>${NCA}</b></p><p>CNUT0: <b>${CNUT0}</b></p><p>CNUT1: <b>${CNUT1}</b></p><p>CNUT2: <b>${CNUT2}</b></p><p>CNUT3: <b>${CNUT3}</b></p><p>NMUN: <b>${NMUN}</b></p>",geometry_type:'Polygon',color:'0000AA',istopojson:true},
+			{name:'cuencas',min_zoom:LAYER_CHANGE,max_zoom:24,CLICK_TEMPLATE:"<p>Cod_Mar: <b>${Cod_Mar}</b></p><p>PfafCuen: <b>${PfafCuen}</b></p><p>PfafRio: <b>${PfafRio}</b></p><p>Cod_Uni: <b>${Cod_Uni}</b></p><p>Nom_Rio: <b>${Nom_Rio}</b></p><p>LngTramo_m: <b>${LngTramo_m}</b></p><p>AreaCTrKm2: <b>${AreaCTrKm2}</b></p><p>Area_Cukm2: <b>${Area_Cukm2}</b></p><p>Perimkm: <b>${Perimkm}</b></p><p>Perimcukm: <b>${Perimcukm}</b></p><p>Cota_Max: <b>${Cota_Max}</b></p><p>Cota_Min: <b>${Cota_Min}</b></p><p>Cota_Med: <b>${Cota_Med}</b></p><p>layer: <b>${layer}</b></p>",geometry_type:'Polygon',color:'0000AA',istopojson:true}
+		]
+	 }else
  	 if(murl.indexOf('?tprustica')>0){
 			initial_coordinates=[-5.931243896484375,43.27820513231556];
 			initial_zoom=9;
@@ -331,18 +351,20 @@ let baseLayer={
 clean_when_zoom_out=(layer_data.length>1);
 
 let base_layers=[
-	['ocupacion_suelo','https://servicios.idee.es/wmts/ocupacion-suelo?layer=LC.LandCoverSurfaces&style=LC.LandCoverSurfaces.Default&tilematrixset=EPSG:3857&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image%2Fpng&TileMatrix={z}&TileCol={x}&TileRow={y}'],
-	['osm','https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'],
-	['carto','https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png'],
-	['arcgis','https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
-	['vacio','']
+	['ocupacion_suelo','https://servicios.idee.es/wmts/ocupacion-suelo?layer=LC.LandCoverSurfaces&style=LC.LandCoverSurfaces.Default&tilematrixset=EPSG:3857&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image%2Fpng&TileMatrix={z}&TileCol={x}&TileRow={y}','idee.es'],
+	['osm','https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png','&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'],
+	['carto','https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png','carto'],
+	['arcgis','https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}','arcgis'],
+	['vacio','','']
 ];
 
 
 let base_layer="https://www.ign.es/wmts/pnoa-ma?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=OI.OrthoimageCoverage&STYLE=default&TILEMATRIXSET=EPSG:3857&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image/jpeg";
+let baselayer_attribution='ign.es';
 for(let l of base_layers){
 	if(document.location.href.toLowerCase().indexOf('base=' + l[0])>0) {
 		base_layer=l[1];
+		if(l[2]) baselayer_attribution=l[2];
 	}
 }
 
