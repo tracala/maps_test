@@ -384,8 +384,8 @@ function default_init_multiworker2(updateResults,clearOldData,getNewMap,useOrigC
 }
 
 
-  function cleanLayerDEF(layer_name){
-      console.log('Layer '+layer_name+' not in zoom range');
+  function cleanLayerDEF(layer_name,zoom){
+      console.log('Layer '+layer_name+' not in zoom range: '+zoom);
   }
 
 function getNewMapGen(m_petition,range,screen_width,cleanLayer,coef2,loadGeoJsonDataArray_){
@@ -419,10 +419,16 @@ function getNewMapGen(m_petition,range,screen_width,cleanLayer,coef2,loadGeoJson
 						init_stream(params,true,loadGeoJsonDataArray_); //true TODO
 					} else {
 						if(!cleanLayer) cleanLayer=cleanLayerDEF;
-            cleanLayer(l.name);
+            cleanLayer(l.name,zoom);
 					}
 				}
 }
+
+
+function getNewMapGenV(m_petition,v_map,coef2){
+ return getNewMapGen(m_petition,v_map.getRange(),v_map.getWidth(),v_map.cleanLayer,coef2,v_map.loadData);
+}
+
 
   function default_update_results(){
   for(let l of layer_data){

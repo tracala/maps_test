@@ -210,3 +210,32 @@ function getSymbology(layer,properties,ii){
 	}
 
 }
+
+
+/**
+
+function stringToColor(str) {
+    let hash = 0;
+
+    for (let i = 0; i < str.length; i++) {
+        hash = (hash * 31 + str.charCodeAt(i)) | 0;
+    }
+
+    const color = (hash >>> 0).toString(16).padStart(8, '0');
+    return '#' + color.slice(-6);
+}
+
+
+function stringToColor(str) {
+    let hash = 0;
+
+    for (let i = 0; i < str.length; i++) {
+        hash = (hash * 31 + str.charCodeAt(i)) | 0;
+    }
+
+    const hue = (hash >>> 0) % 360;
+
+    return `hsl(${hue}, 65%, 55%)`;
+}
+
+ */
