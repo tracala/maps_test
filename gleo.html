@@ -19,6 +19,7 @@
 	const MINSPAN=3000;
 	const opacity='aa';
 	const lines_opacity='ff';
+  const USE_STROKE=false;
   
   </script>
 
@@ -55,7 +56,6 @@
   	import { setFactory, factory } from "gleo/geometry/DefaultGeometry.mjs";
 
 
-    const MAP_COEF=1.5;
     
     const map = new MercatorMap("gleomap", {
 	  center: initial_coordinates.reverse(),
@@ -67,8 +67,9 @@
 	
 
 
-    new MercatorTiles("https://tile.osm.org/{z}/{x}/{y}.png", {
-      attribution: "<a href='http://osm.org/copyright'>© OSM contributors</a>"
+    
+    new MercatorTiles(base_layer, {
+      attribution: baselayer_attribution
     }).addTo(map);
 
 
@@ -82,30 +83,36 @@ function change_color(color){
     let map_width;
 
     function drawData(d,click_template){
-      geojson[geojson.length]=new GeoJSON(d, {
-        polygonSymbolizer: function (feature, geom) {
-              const fill=new Fill(geom, {colour:'#'+feature.properties.color+opacity, cursor:'pointer',interactive:true});
-              fill.on('click', (ev) => {
-                let html=fillTemplate(click_template, feature.properties);
-                html='<div>'+html+'</div>';
-                console.log('html',html);
-                if (currentBalloon) currentBalloon.remove();
+      geojson.push(new GeoJSON(d, {
+            polygonSymbolizer: function (feature, geom) {
+                  const fill=new Fill(geom, {colour:'#'+feature.properties.color+opacity, cursor:'pointer',interactive:true});
+                  fill.on('click', (ev) => {
+                    let html=fillTemplate(click_template, feature.properties);
+                    html='<div>'+html+'</div>';
+                    console.log('html',html);
+                    if (currentBalloon) currentBalloon.remove();
 
-                currentBalloon = new Balloon(ev.geometry,html).addTo(map);
+                    currentBalloon = new Balloon(ev.geometry,html).addTo(map);
 
-              });
-                  
-                return [
-                    //new Fill(geom, {colour:'#77ff77'+opacity}), //'#'+feature.properties.color
-                    fill,
-                    new Stroke(geom, {colour:'#ee3333'+opacity, width:2})
-                  ]
-                  
-          },
-        lineSymbolizer: function (feature, geom) {
-          return false?new Stroke(geom, {colour:'#2233ee'+lines_opacity, width:2}):new Stroke(geom, {colour:'#2233ee'+'11', width:8});
-        }
-    }).addTo(map);	
+                  });
+                  if(USE_STROKE){
+                    const stroke=new Stroke(geom, {colour:'#3333ee'+opacity, width:2})
+                      
+                    return [
+                        stroke,
+                        fill
+                      ]
+
+                  }
+                  else
+                  return [fill];
+                      
+              },
+            lineSymbolizer: function (feature, geom) {
+              return false?new Stroke(geom, {colour:'#2233ee'+lines_opacity, width:2}):new Stroke(geom, {colour:'#2233ee'+'11', width:8});
+            }
+        }).addTo(map)
+        );	
 
     }
 
@@ -126,32 +133,15 @@ function clearOldData(){
 }
 
 
-/*
-function updateResults_(){
-	
-	let range=map.bbox;
-	let screen_width=map.container.clientWidth;
-	map_width=(range.maxX-range.minX);
-
-	let DINAMIC_MIN_DISTANCE=Math.round(map_width/screen_width)*coef*MAP_COEF;
-    let command='getStream';
-    let zoom=getZoomFromScale(map.scale);
-
-    for(let l of layer_data){
-      if((zoom>=l.min_zoom) && (zoom<=l.max_zoom)){
-        let params={command:command,LAYER_TO_LOAD:l.name,DINAMIC_MIN_DISTANCE:DINAMIC_MIN_DISTANCE,
-            xmin:range.minX,ymin:range.minY,xmax:range.maxX,ymax:range.maxY};
-        init_stream(params,true,loadGeoJsonDataArray);
-      } else console.log('Layer '+l.name+' not in zoom range');
-    }
+let v_map={
+  getRange: ()=>{let range_=map.bbox;let range=[range_.minX,range_.minY,range_.maxX,range_.maxY];return range;},
+  getWidth: ()=>{return map.container.clientWidth;},
+  loadData: (ar,layer_name)=>{return loadGeoJsonDataArray(ar,layer_name);},
+  cleanLayer: null
 }
-*/
 
-export function getNewMap(m_petition){
-        let range_=map.bbox;
-        let range=[range_.minX,range_.minY,range_.maxX,range_.maxY];
-				let screen_width=map.container.clientWidth;
-				getNewMapGen(m_petition,range,screen_width,null,8,loadGeoJsonDataArray);
+function getNewMap(m_petition){
+				getNewMapGenV(m_petition,v_map,8);
 }
 
 
