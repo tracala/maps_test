@@ -80,8 +80,8 @@
     </div>
 
     <div class="campo">
-        <label for="baseMaps">Mapa Base</label>
-        <select id="baseMaps"></select>
+        <label for="baseMap">Mapa Base</label>
+        <select id="baseMap"></select>
     </div>
 
     <button id="aceptar">Aceptar</button>
@@ -91,58 +91,39 @@
 <script>
 
     // Opciones de los desplegables
-    const tipos = "maplibre,maplibre_deckgl,cesium,openlayers,leaflet2,leaflet,maptalks,gleo,leaflet_pixi,maptalks_three,maptalks3d,deckgl".split(',');
-    const datos = "gadm2,edificios_madrid,parroquias,secciones,siose,corine,espa_cuencas".split(',');
-    const baseMaps = "pnoa,osm,carto,arcgis,ocupacion_suelo".split(',');
+    const tipos = 'maplibre,maplibre_deckgl,cesium,openlayers,leaflet2,leaflet,maptalks,gleo,leaflet_pixi,maptalks_three,maptalks3d,deckgl';
+    const datos = 'gadm2,edificios_madrid,parroquias,secciones,siose,corine,espa_cuencas';
+    const baseMaps = 'pnoa,osm,carto,arcgis,ocupacion_suelo';
 
 
-    // Rellenar desplegable de tipos
-    const selectTipo = document.getElementById("tipoMapa");
+    function rellenarDeplegable(id, opciones) {
+        const select = document.getElementById(id);
 
-    tipos.forEach(tipo => {
+        let opciones_ar= opciones.split(',');
+        opciones_ar.forEach(opcion => {
 
-        const option = document.createElement("option");
+            const option = document.createElement("option");
 
-        option.value = tipo;
-        option.textContent = tipo;
+            option.value = opcion;
+            option.textContent = opcion;
 
-        selectTipo.appendChild(option);
-    });
+            select.appendChild(option);
+        });
+        return select;
 
-
-    // Rellenar desplegable de datos
-    const selectDato = document.getElementById("dato");
-
-    datos.forEach(dato => {
-
-        const option = document.createElement("option");
-
-        option.value = dato;
-        option.textContent = dato;
-
-        selectDato.appendChild(option);
-    });
-
-    // Rellenar desplegable de datos
-    const selectBaseMaps  = document.getElementById("baseMaps");
-
-    baseMaps.forEach(dato => {
-
-        const option = document.createElement("option");
-
-        option.value = dato;
-        option.textContent = dato;
-
-        selectBaseMaps.appendChild(option);
-    });
+    }
+    
+    rellenarDeplegable("tipoMapa", tipos);
+    rellenarDeplegable("dato", datos);
+    rellenarDeplegable("baseMap", baseMaps);
 
 
     // Botón Aceptar
     document.getElementById("aceptar").onclick = function () {
 
-        const tipo = selectTipo.value;
-        const dato = selectDato.value;
-        const baseMap = selectBaseMaps.value;
+        const tipo = document.getElementById("tipoMapa").value;
+        const dato = document.getElementById("dato").value;
+        const baseMap = document.getElementById("baseMap").value;
 
         window.location.href =encodeURIComponent(tipo) + '.html?'+encodeURIComponent(dato) + '&base=' + encodeURIComponent(baseMap);
     };
