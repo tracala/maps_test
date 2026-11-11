@@ -145,6 +145,15 @@ if(murl.indexOf('?cuencas')>0)
 	initial_coordinates=[-5.931243896484375,43.27820513231556];
 	initial_zoom=7;
  } else
+if(murl.indexOf('?rios')>0)
+	{
+	MIN_ZOOM_FOR_DATA_=6; //12
+	LAYER_TO_LOAD_='rios';
+ 	CLICK_TEMPLATE_=" <p>cod_mar: <b>${cod_mar}</b></p><p>PFAFRIO: <b>${PFAFRIO}</b></p><p>COD_UNI: <b>${COD_UNI}</b></p><p>nom_rio: <b>${nom_rio}</b></p><p>Shape_Leng: <b>${Shape_Leng}</b></p><p>color: <b>${color}</b></p><p>Long_Rio_m: <b>${Long_Rio_m}</b></p>";
+	initial_coordinates=[-5.931243896484375,43.27820513231556];
+	initial_zoom=7;
+	//istopojson=false;
+ } else
 if(murl.indexOf('?unidad_geologica')>0)
 	{
 	MIN_ZOOM_FOR_DATA_=7; //12
@@ -251,7 +260,18 @@ if(murl.indexOf('?geoboundaries')>0){
 		const LAYER_CHANGE=11
 		layer_data=[
 			{name:'secciones',min_zoom:3,max_zoom:LAYER_CHANGE,CLICK_TEMPLATE:"<p>CUSEC: <b>${CUSEC}</b></p><p>CUMUN: <b>${CUMUN}</b></p><p>CSEC: <b>${CSEC}</b></p><p>CDIS: <b>${CDIS}</b></p><p>CMUN: <b>${CMUN}</b></p><p>CPRO: <b>${CPRO}</b></p><p>CCA: <b>${CCA}</b></p><p>CUDIS: <b>${CUDIS}</b></p><p>CLAU2: <b>${CLAU2}</b></p><p>NPRO: <b>${NPRO}</b></p><p>NCA: <b>${NCA}</b></p><p>CNUT0: <b>${CNUT0}</b></p><p>CNUT1: <b>${CNUT1}</b></p><p>CNUT2: <b>${CNUT2}</b></p><p>CNUT3: <b>${CNUT3}</b></p><p>NMUN: <b>${NMUN}</b></p>",geometry_type:'Polygon',color:'0000AA',istopojson:true},
-			{name:'cuencas',min_zoom:LAYER_CHANGE,max_zoom:24,CLICK_TEMPLATE:"<p>Cod_Mar: <b>${Cod_Mar}</b></p><p>PfafCuen: <b>${PfafCuen}</b></p><p>PfafRio: <b>${PfafRio}</b></p><p>Cod_Uni: <b>${Cod_Uni}</b></p><p>Nom_Rio: <b>${Nom_Rio}</b></p><p>LngTramo_m: <b>${LngTramo_m}</b></p><p>AreaCTrKm2: <b>${AreaCTrKm2}</b></p><p>Area_Cukm2: <b>${Area_Cukm2}</b></p><p>Perimkm: <b>${Perimkm}</b></p><p>Perimcukm: <b>${Perimcukm}</b></p><p>Cota_Max: <b>${Cota_Max}</b></p><p>Cota_Min: <b>${Cota_Min}</b></p><p>Cota_Med: <b>${Cota_Med}</b></p><p>layer: <b>${layer}</b></p>",geometry_type:'Polygon',color:'0000AA',istopojson:true}
+			{name:'cuencas',min_zoom:LAYER_CHANGE,max_zoom:24,CLICK_TEMPLATE:"<p>Cod_Mar: <b>${Cod_Mar}</b></p><p>PfafCuen: <b>${PfafCuen}</b></p><p>PfafRio: <b>${PfafRio}</b></p><p>Cod_Uni: <b>${Cod_Uni}</b></p><p>Nom_Rio: <b>${Nom_Rio}</b></p><p>LngTramo_m: <b>${LngTramo_m}</b></p><p>AreaCTrKm2: <b>${AreaCTrKm2}</b></p><p>Area_Cukm2: <b>${Area_Cukm2}</b></p><p>Perimkm: <b>${Perimkm}</b></p><p>Perimcukm: <b>${Perimcukm}</b></p><p>Cota_Max: <b>${Cota_Max}</b></p><p>Cota_Min: <b>${Cota_Min}</b></p><p>Cota_Med: <b>${Cota_Med}</b></p><p>layer: <b>${layer}</b></p>",geometry_type:'Polygon',color:'0000AA',istopojson:true},
+		]
+	 }else
+	if(murl.indexOf('?espa2_cuencas')>0)
+	{
+		initial_coordinates=[-3.686008,40.47746];
+		initial_zoom=5.5;
+		const LAYER_CHANGE=11
+		layer_data=[
+			{name:'secciones',min_zoom:3,max_zoom:LAYER_CHANGE,CLICK_TEMPLATE:"<p>CUSEC: <b>${CUSEC}</b></p><p>CUMUN: <b>${CUMUN}</b></p><p>CSEC: <b>${CSEC}</b></p><p>CDIS: <b>${CDIS}</b></p><p>CMUN: <b>${CMUN}</b></p><p>CPRO: <b>${CPRO}</b></p><p>CCA: <b>${CCA}</b></p><p>CUDIS: <b>${CUDIS}</b></p><p>CLAU2: <b>${CLAU2}</b></p><p>NPRO: <b>${NPRO}</b></p><p>NCA: <b>${NCA}</b></p><p>CNUT0: <b>${CNUT0}</b></p><p>CNUT1: <b>${CNUT1}</b></p><p>CNUT2: <b>${CNUT2}</b></p><p>CNUT3: <b>${CNUT3}</b></p><p>NMUN: <b>${NMUN}</b></p>",geometry_type:'Polygon',color:'0000AA',istopojson:true},
+			{name:'cuencas',min_zoom:LAYER_CHANGE,max_zoom:24,CLICK_TEMPLATE:"<p>Cod_Mar: <b>${Cod_Mar}</b></p><p>PfafCuen: <b>${PfafCuen}</b></p><p>PfafRio: <b>${PfafRio}</b></p><p>Cod_Uni: <b>${Cod_Uni}</b></p><p>Nom_Rio: <b>${Nom_Rio}</b></p><p>LngTramo_m: <b>${LngTramo_m}</b></p><p>AreaCTrKm2: <b>${AreaCTrKm2}</b></p><p>Area_Cukm2: <b>${Area_Cukm2}</b></p><p>Perimkm: <b>${Perimkm}</b></p><p>Perimcukm: <b>${Perimcukm}</b></p><p>Cota_Max: <b>${Cota_Max}</b></p><p>Cota_Min: <b>${Cota_Min}</b></p><p>Cota_Med: <b>${Cota_Med}</b></p><p>layer: <b>${layer}</b></p>",geometry_type:'Polygon',color:'0000AA',istopojson:true},
+			{name:'rios',min_zoom:11,max_zoom:25,CLICK_TEMPLATE:"<p>cod_mar: <b>${cod_mar}</b></p><p>PFAFRIO: <b>${PFAFRIO}</b></p><p>COD_UNI: <b>${COD_UNI}</b></p><p>nom_rio: <b>${nom_rio}</b></p><p>Shape_Leng: <b>${Shape_Leng}</b></p><p>color: <b>${color}</b></p><p>Long_Rio_m: <b>${Long_Rio_m}</b></p>",geometry_type:'Line',color:'0000AA',istopojson:false}
 		]
 	 }else
  	 if(murl.indexOf('?tprustica')>0){
@@ -314,6 +334,17 @@ if(murl.indexOf('?geoboundaries')>0){
 			layer_data=[
 				{name:'secciones',min_zoom:3,max_zoom:LAYER_CHANGE,CLICK_TEMPLATE:"<p>CUSEC: <b>${CUSEC}</b></p><p>CUMUN: <b>${CUMUN}</b></p><p>CSEC: <b>${CSEC}</b></p><p>CDIS: <b>${CDIS}</b></p><p>CMUN: <b>${CMUN}</b></p><p>CPRO: <b>${CPRO}</b></p><p>CCA: <b>${CCA}</b></p><p>CUDIS: <b>${CUDIS}</b></p><p>CLAU2: <b>${CLAU2}</b></p><p>NPRO: <b>${NPRO}</b></p><p>NCA: <b>${NCA}</b></p><p>CNUT0: <b>${CNUT0}</b></p><p>CNUT1: <b>${CNUT1}</b></p><p>CNUT2: <b>${CNUT2}</b></p><p>CNUT3: <b>${CNUT3}</b></p><p>NMUN: <b>${NMUN}</b></p>",geometry_type:'Polygon',color:'0000AA',istopojson:true},
 				{name:'mfe',min_zoom:LAYER_CHANGE,max_zoom:24,CLICK_TEMPLATE:"<p>fid: <b>${fid}</b></p><p>TIPESTR: <b>${TIPESTR}</b></p><p>area: <b>${area}</b></p>",geometry_type:'Polygon',color:'AA0000',istopojson:true}
+			];
+			istopojson=true;
+		}else
+
+		if(murl.indexOf('?mup')>0){
+			initial_coordinates=[-5.931243896484375,43.27820513231556];
+			initial_zoom=8;
+			const LAYER_CHANGE=11
+			layer_data=[
+				{name:'parroquias',min_zoom:3,max_zoom:LAYER_CHANGE,CLICK_TEMPLATE:"<p>NOMBRE: <b>${NOMBRE}</b></p><p>MUN: <b>${MUN}</b></p>",geometry_type:'Polygon',color:'0000AA',istopojson:true},
+				{name:'mup',min_zoom:LAYER_CHANGE,max_zoom:24,CLICK_TEMPLATE:"<p>IDMONT: <b>${IDMONT}</b></p><p>IDDSAM: <b>${IDDSAM}</b></p><p>NCATALOGO: <b>${NCATALOGO}</b></p><p>FUENTE: <b>${FUENTE}</b></p><p>FIABILIDAD: <b>${FIABILIDAD}</b></p><p>NOTAS: <b>${NOTAS}</b></p><p>TIPO: <b>${TIPO}</b></p><p>NRECINTO: <b>${NRECINTO}</b></p><p>PERIMETRO: <b>${PERIMETRO}</b></p><p>SUPERFICIE: <b>${SUPERFICIE}</b></p><p>SUP_B: <b>${SUP_B}</b></p><p>SUP_B_FUEN: <b>${SUP_B_FUEN}</b></p><p>ESTADO: <b>${ESTADO}</b></p><p>CONCEJO: <b>${CONCEJO}</b></p><p>NNCATALOGO: <b>${NNCATALOGO}</b></p><p>SHAPE_LENG: <b>${SHAPE_LENG}</b></p><p>SC: <b>${SC}</b></p><p>NOMBRE: <b>${NOMBRE}</b></p><p>MapTips: <b>${MapTips}</b></p><p>SUPERFIC_1: <b>${SUPERFIC_1}</b></p><p>SHAPE_Le_1: <b>${SHAPE_Le_1}</b></p><p>SHAPE_Area: <b>${SHAPE_Area}</b></p><p>Pertenenci: <b>${Pertenenci}</b></p>",geometry_type:'Polygon',color:'AA0000',istopojson:true}
 			];
 			istopojson=true;
 		}else
