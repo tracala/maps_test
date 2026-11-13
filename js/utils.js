@@ -302,7 +302,10 @@ function setDefaultOnMessage(updateResults,clearOldData){
 function setDefaultOnMessageMultiWorker(updateResults,clearOldData,w){
   w.onmessage = function (oEvent) {
         if(oEvent.data.command=='load') {console.log('Capa cargada. Se actualiza mapa');updateResults();}
-        else if(oEvent.data.command=='clearOldData') clearOldData();
+        else if(oEvent.data.command=='clearOldData') {
+          loaded_ids={};
+          clearOldData();
+        }
         else if(oEvent.data.command=='cancel') {if(!getNewMap) console.log('getNewMap null');getNewMap(oEvent.data.counter);}
         else alert('Mensaje desconocido');
     };
