@@ -311,7 +311,11 @@ function setDefaultOnMessageMultiWorker(updateResults,clearOldData,w){
 function setDefaultOnMessageMultiWorker2(updateResults,clearOldData,getNewMap,w){
   w.onmessage = function (oEvent) {
         if(oEvent.data.command=='load') {console.log('Capa cargada. Se actualiza mapa');updateResults();}
-        else if(oEvent.data.command=='clearOldData') clearOldData();
+        else if(oEvent.data.command=='clearOldData') {
+          //Borrar los IDs de la capa que se ha cargado, para que no se dibujen en el mapa
+          loaded_ids={};
+          clearOldData();
+        }
         else if(oEvent.data.command=='cancel') {if(!getNewMap) console.log('getNewMap null');getNewMap(oEvent.data.counter);}
         else alert('Mensaje desconocido');
     };
