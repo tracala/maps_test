@@ -625,8 +625,12 @@ async function* reload_iterable_tp(layer,minX, minY, maxX, maxY,DINAMIC_MIN_DIST
 		foundIds = new FastBitSet(elem);
 		if(!preserve_data) loaded_ids[layer]=foundIds;
 		else{
-			if(!loaded_ids[layer]) loaded_ids[layer]=new FastBitSet([]);
-			foundIds.difference(loaded_ids[layer]);
+			if(!loaded_ids[layer]) {
+        //console.log('Hay elementos cargados '+layer);
+        loaded_ids[layer]=new FastBitSet([]);
+      } //else console.log('Hay elementos cargados '+layer+' tot '+loaded_ids[layer].size());
+			
+      foundIds.difference(loaded_ids[layer]);
 			loaded_ids[layer].union(foundIds);
 		}
 		console_log(foundIds.size()+' elementos a representar ('+layer+')');

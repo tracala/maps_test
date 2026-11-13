@@ -303,7 +303,8 @@ function setDefaultOnMessageMultiWorker(updateResults,clearOldData,w){
   w.onmessage = function (oEvent) {
         if(oEvent.data.command=='load') {console.log('Capa cargada. Se actualiza mapa');updateResults();}
         else if(oEvent.data.command=='clearOldData') {
-          loaded_ids={};
+          //console.log('Se borran IDs cargados');
+          //loaded_ids={};
           clearOldData();
         }
         else if(oEvent.data.command=='cancel') {if(!getNewMap) console.log('getNewMap null');getNewMap(oEvent.data.counter);}
@@ -316,7 +317,8 @@ function setDefaultOnMessageMultiWorker2(updateResults,clearOldData,getNewMap,w)
         if(oEvent.data.command=='load') {console.log('Capa cargada. Se actualiza mapa');updateResults();}
         else if(oEvent.data.command=='clearOldData') {
           //Borrar los IDs de la capa que se ha cargado, para que no se dibujen en el mapa
-          loaded_ids={};
+          //console.log('Se borran IDs cargados');
+          //loaded_ids={};
           clearOldData();
         }
         else if(oEvent.data.command=='cancel') {if(!getNewMap) console.log('getNewMap null');getNewMap(oEvent.data.counter);}
@@ -426,6 +428,12 @@ function getNewMapGen(m_petition,range,screen_width,cleanLayer,coef2,loadGeoJson
 						init_stream(params,true,loadGeoJsonDataArray_); //true TODO
 					} else {
 						if(!cleanLayer) cleanLayer=cleanLayerDEF;
+            if(workers[l.name]) {
+              console.log('Borramos IDs cargados deletebitmapindex '+l.name);
+  						
+              let params={command:'deletebitmapindex',LAYER_TO_LOAD:l.name};
+              workers[l.name].postMessage(params);
+            } else console.log('No se encuentra worker');
             cleanLayer(l.name,zoom);
 					}
 				}

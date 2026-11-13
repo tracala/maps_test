@@ -98,7 +98,7 @@ async function getStream_transferable(e){
           if(!preserve_data) {
             loaded_ids={};
             cancel_current_reads=true;
-            postMessage({command:'clearOldData'})
+            postMessage({command:'clearOldData',layer:layer})
           };
           let d=e.data.DINAMIC_MIN_DISTANCE;
           //if(LITE_MODE) d=0;
@@ -136,7 +136,7 @@ async function getStream_channel_BLOCK(e){
 
           if(CUT_OUTSIDE_LINES(e.data.LAYER_TO_LOAD)) preserve_data=false;
 
-          if(!preserve_data) {loaded_ids={};cancel_current_reads=true;postMessage({command:'clearOldData'})};
+          if(!preserve_data) {loaded_ids={};cancel_current_reads=true;postMessage({command:'clearOldData',layer:layer})};
           
           let arg=[layer,e.data.xmin, e.data.ymin, e.data.xmax, e.data.ymax,e.data.DINAMIC_MIN_DISTANCE,preserve_data];
           let istopojson = (topo_layers[layer]!=null);
@@ -192,7 +192,7 @@ async function getStream_channel(e){
             loaded_ids={};
             cancel_current_reads=true;
             cancel_previous[layer]=petition;
-            postMessage({command:'clearOldData'})
+            postMessage({command:'clearOldData',layer:layer})
           };
           
           let arg=[layer,e.data.xmin, e.data.ymin, e.data.xmax, e.data.ymax,e.data.DINAMIC_MIN_DISTANCE,preserve_data];
@@ -236,8 +236,11 @@ onmessage = async(e) => {
     }
       else 
        if(e.data.command=='deletebitmapindex'){
-          //console.log('Deleteb de '+e.data.LAYER_TO_LOAD);
-          loaded_ids[e.data.LAYER_TO_LOAD]=null;
+          console.log('Deleteb de '+e.data.LAYER_TO_LOAD);
+          if(loaded_ids[e.data.LAYER_TO_LOAD]){
+            console.log('Borramos IDs cargados deletebitmapindex size '+loaded_ids[e.data.LAYER_TO_LOAD].size());
+            loaded_ids[e.data.LAYER_TO_LOAD]=null;
+          }
       }  else
        if(e.data.command=='cancel'){
          commands['cancel'](e.data.LAYER_TO_LOAD);
