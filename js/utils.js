@@ -319,7 +319,9 @@ function setDefaultOnMessageMultiWorker2(updateResults,clearOldData,getNewMap,w)
           //Borrar los IDs de la capa que se ha cargado, para que no se dibujen en el mapa
           //console.log('Se borran IDs cargados');
           //loaded_ids={};
-          clearOldData();
+          let layer=null;
+          if(oEvent.data.layer) layer=oEvent.data.layer; else console.log('clearOldData: No se encuentra campo layer');
+          clearOldData(layer);
         }
         else if(oEvent.data.command=='cancel') {if(!getNewMap) console.log('getNewMap null');getNewMap(oEvent.data.counter);}
         else alert('Mensaje desconocido');
@@ -344,6 +346,7 @@ function setDefaultOnMessageSHP(updateResults,clearOldData,addLayerToMap){
 
 
 function getUpdateResultsFunction(u,m_delay,use_throttle){
+  if(!u) u=default_update_results;
   if(!m_delay) m_delay=DELAY;
   return (use_throttle)?throttle(u,m_delay):debounce(u,m_delay); 
 }

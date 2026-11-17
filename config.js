@@ -339,7 +339,8 @@ if(murl.indexOf('?geoboundaries')>0){
 		}else
 
 		if(murl.indexOf('?mup')>0){
-			initial_coordinates=[-5.931243896484375,43.27820513231556];
+			//initial_coordinates=[-5.931243896484375,43.27820513231556];
+			initial_coordinates=[-5.851253047585488,43.3611914622564];
 			initial_zoom=8;
 			const LAYER_CHANGE=11
 			layer_data=[

@@ -38,12 +38,19 @@
 
 
 </head>
-<body>
+<!-- #
+ 	EPSG:8857
+	incluir proj4js
+
+    var map = L.map('map', {crs: L.CRS.EPSG4326});
+-->
+
+ <body>
 
 <div id='map'></div>
 
-<script src="leaflet-geojson.js" type="text/javascript"></script><script type="module">
-	import {LeafletMap, TileLayer, GeoJSON,LayerGroup} from 'leaflet';
+<script type="module">
+	import {LeafletMap, TileLayer, GeoJSON,LayerGroup,CRS} from 'leaflet';
 
     let previousResults=null;
 	let map;
@@ -110,8 +117,9 @@
         return [epsg4326ToEpsg3857([b.getWest(),b.getSouth()]),epsg4326ToEpsg3857([b.getEast(),b.getNorth()])].flatMap(x=>x);
     }
 
-    function clearOldData(){
-                previousResults.remove();
+    function clearOldData(layer){
+                console.log('clearOldData',layer);
+				previousResults.remove();
                 const nextResults = new LayerGroup().addTo(map);
                 previousResults = nextResults;
     }
@@ -131,8 +139,8 @@
 
 
 	function init_map(){
-		map = new LeafletMap('map').setView(initial_coordinates.reverse(), initial_zoom);
-		//debug=map;
+		map = new LeafletMap('map').setView(initial_coordinates.reverse(), initial_zoom+1);
+		debug=map;
 
 		const tiles = new TileLayer(base_layer, {
 				maxZoom: maxZoom,
@@ -145,8 +153,10 @@
 
 	document.addEventListener("DOMContentLoaded", async () => { 
 		init_map();
-		const   updateResults = debounce(default_update_results, 500); 
-		map.on("moveend zoomend", updateResults);
+		//const updateResults= getUpdateResultsFunction(null,100,false); //500
+		const updateResults= default_update_results;
+
+		map.on("moveend zoomend", updateResults); //move 
 		default_init_multiworker2(updateResults,clearOldData,getNewMap);
 	});
 

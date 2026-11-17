@@ -283,11 +283,16 @@ async function decompresstp_(file_name){
   let useV3=true;
   
 
-  let [topo_data,decoded_data2,gt_arcs]=await Promise.all([
+  const promises =[
       readCompressedCBOR(file_name+'_g'),
       readCompressedCBOR(file_name+'_a'),
       useV3?readCompressedCBOR(file_name+'_t'):null
-  ]);
+  ];
+
+  
+  let [topo_data,decoded_data2,gt_arcs]=await Promise.all(promises);
+  
+  //console.log(result.map(promise => promise.status));
   
 
   tick.tick('Leido '+file_name);
