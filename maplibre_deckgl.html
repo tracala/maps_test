@@ -28,6 +28,7 @@ let geojson_layers={};
 let deckOverlay=null;
 let counters={};
 
+
 function clearOldData(){
 	counters={};
 	geojson_layers={};
@@ -163,6 +164,7 @@ function loadGeoJsonDataArray(ar,layer_name){
 
 
 function getBoundingBox3857() {
+			if(!map) return null;
 			const { _sw, _ne } = map.getBounds();
 			return [epsg4326ToEpsg3857([_sw.lng,_sw.lat]),epsg4326ToEpsg3857([_ne.lng,_ne.lat])].flatMap(x=>x);
 }
@@ -180,16 +182,20 @@ function clearLayer(layer_name){
 }
 
 function getNewMap(m_petition){
-                let range=getBoundingBox3857();
-				let screen_width=map._container.clientWidth;
-				getNewMapGen(m_petition,range,screen_width,clearLayer);
+	if(map){
+		let range=getBoundingBox3857();
+		let screen_width=map._container.clientWidth;
+		getNewMapGen(m_petition,range,screen_width,clearLayer);
+	}
 }
 
 
 
 
 	document.addEventListener("DOMContentLoaded", async () => {
-        let m_initialViewState={
+        base_layer=base_layer.replace('{s}','a');
+
+		let m_initialViewState={
             container: "map",
             style: {
 					'version': 8,
@@ -197,10 +203,10 @@ function getNewMap(m_petition){
 						'raster-tiles': {
 							'type': 'raster',
 							"tiles": [
-							"https://www.ign.es/wmts/pnoa-ma?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=OI.OrthoimageCoverage&STYLE=default&TILEMATRIXSET=EPSG:3857&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image/jpeg"
+							base_layer
 							],
 							"tileSize": 256,
-							"attribution": "© Instituto Geografico Nacional"
+							"attribution": baselayer_attribution
 						}
 					},
 					'glyphs': 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',

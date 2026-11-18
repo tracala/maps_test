@@ -103,6 +103,7 @@ import * as maplibregl from 'https://unpkg.com/maplibre-gl@6.19.0/dist/maplibre-
 
 		
 		if(base_layer.length>0){
+			base_layer=base_layer.replace('{s}','a');
 			mapconfig.style= {
 					'version': 8,
 					'sources': {
