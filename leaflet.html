@@ -141,14 +141,14 @@
 
     async function init_map(){
             // basic OSM Leaflet map
-            map = L.map('map').setView(initial_coordinates.reverse(), initial_zoom);
+            map = L.map('map').setView(initial_coordinates.reverse(), initial_zoom+1);
             debug=map;
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+
+            L.tileLayer(base_layer, {
                 maxZoom: maxZoom,
                 minZoom: minZoom,
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                attribution: baselayer_attribution
             }).addTo(map);
-
 
             // track the previous results so we can remove them when adding new results
             previousResults = L.layerGroup().addTo(map);

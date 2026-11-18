@@ -52,7 +52,7 @@
 <script type="module">
 	import {LeafletMap, TileLayer, GeoJSON,LayerGroup,CRS} from 'leaflet';
 
-    let previousResults=null;
+    let previousResults={};
 	let map;
     
     
@@ -107,7 +107,10 @@
         });
 
 
-        geojsonLayer.addTo(previousResults); 
+        if(!previousResults[layer_name]){
+			previousResults[layer_name]=new LayerGroup().addTo(map);
+		}
+		geojsonLayer.addTo(previousResults[layer_name]); 
     }
 
     
@@ -119,18 +122,25 @@
 
     function clearOldData(layer){
                 console.log('clearOldData',layer);
-				previousResults.remove();
-                const nextResults = new LayerGroup().addTo(map);
-                previousResults = nextResults;
+				if(previousResults[layer]){
+					previousResults[layer].remove();
+					const nextResults = new LayerGroup().addTo(map);
+					previousResults[layer] = nextResults;
+				}
     }
     
+
+	function cleanLayer(layer_name,zoom){
+		console.log('Layer '+layer_name+' not in zoom range: '+zoom);
+		clearOldData(layer_name);
+	}
 
     
 	let v_map={
 		getRange: getBoundingBox3857,
 		getWidth: ()=>{return map.getContainer().clientWidth},
 		loadData: (ar,layer_name)=>{return loadGeoJsonDataArray(ar,layer_name);},
-		cleanLayer: null
+		cleanLayer: cleanLayer
 	}
 
 	function getNewMap(m_petition){
@@ -148,7 +158,6 @@
 				attribution: baselayer_attribution
 		}).addTo(map);
 
-		previousResults = new LayerGroup().addTo(map);
 	}
 
 	document.addEventListener("DOMContentLoaded", async () => { 

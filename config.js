@@ -234,6 +234,8 @@ if(murl.indexOf('?geoboundaries')>0){
 
 
 
+
+
  
  let layer_data=[];
  if(LAYER_TO_LOAD_) {
@@ -248,7 +250,16 @@ if(murl.indexOf('?geoboundaries')>0){
 	 ];
 }
  else
-	 if(murl.indexOf('?capas_cuencas')>0) {layer_data=[
+	if(murl.indexOf('?cos_portugal')>0){
+		initial_coordinates=[ -8.040983676910402, 39.41974703824895];
+		initial_zoom=6;//14;
+		layer_data=[
+					{name:'cos_suelo_portugal',min_zoom:12,max_zoom:24,CLICK_TEMPLATE:"<p>cos25v1_n4: <b>${cos25v1_n4}</b></p><p>cos25v1__1: <b>${cos25v1__1}</b></p><p>Area_ha: <b>${Area_ha}</b></p>",geometry_type:'Polygon',tematico:'cos25v1_n4',istopojson:true}
+		];
+		istopojson=true;
+	}
+	else
+	if(murl.indexOf('?capas_cuencas')>0) {layer_data=[
 			{name:'cauces_5000',min_zoom:7,max_zoom:24,CLICK_TEMPLATE:"<p>Nombre: <b>${NOMBRE}</b></p><p>Tipo: <b>${ID_TIPO}</b></p>",geometry_type:'Line',color:'0000AA'},
 			{name:'cuencas',min_zoom:7,max_zoom:24,CLICK_TEMPLATE:"<p>Nombre: <b>${Nom_Rio}</b></p><p>Longitud: <b>${LngTramo_m}</b></p>",geometry_type:'Polygon',color:'AA0000'}
 	 ];
@@ -384,15 +395,16 @@ clean_when_zoom_out=(layer_data.length>1);
 
 let base_layers=[
 	['ocupacion_suelo','https://servicios.idee.es/wmts/ocupacion-suelo?layer=LC.LandCoverSurfaces&style=LC.LandCoverSurfaces.Default&tilematrixset=EPSG:3857&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image%2Fpng&TileMatrix={z}&TileCol={x}&TileRow={y}','idee.es'],
-	['osm','https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png','&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'],
+	['osm','https://tile.openstreetmap.org/{z}/{x}/{y}.png','&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'],
 	['carto','https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png','carto'],
 	['arcgis','https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}','arcgis'],
 	['vacio','','']
 ];
 
 
+
 let base_layer="https://www.ign.es/wmts/pnoa-ma?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=OI.OrthoimageCoverage&STYLE=default&TILEMATRIXSET=EPSG:3857&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image/jpeg";
-let baselayer_attribution='ign.es';
+let baselayer_attribution='© Instituto Geografico Nacional';
 for(let l of base_layers){
 	if(document.location.href.toLowerCase().indexOf('base=' + l[0])>0) {
 		base_layer=l[1];
