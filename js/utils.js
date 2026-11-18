@@ -400,10 +400,15 @@ function default_init_multiworker2(updateResults,clearOldData,getNewMap,useOrigC
     return;
   }
 
-function getNewMapGen(m_petition,range,screen_width,cleanLayer,coef2,loadGeoJsonDataArray_){
+  let actual_zoom=0;
+
+
+
+  function getNewMapGen(m_petition,range,screen_width,cleanLayer,coef2,loadGeoJsonDataArray_){
 				let map_width=(range[2]-range[0]);
 				
 				let zoom=27.135-Math.log2(map_width);
+        actual_zoom=zoom;
 				//console.log('zoom',zoom,map.getZoom());
 
 				let DINAMIC_MIN_DISTANCE=Math.round(map_width/screen_width)*coef;

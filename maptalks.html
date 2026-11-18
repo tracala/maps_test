@@ -96,10 +96,23 @@
               'polygonOpacity': 0.4
             });
           } else if (( g instanceof maptalks.LineString) || (g instanceof maptalks.MultiLineString)) {
-            g.updateSymbol({
+            let symbol={
               'lineColor': '#'+color,
-              'lineWidth': 1,
-            });
+              'lineWidth': 2,
+            };
+            const useLabels=(actual_zoom>14);
+            if(useLabels && murl.indexOf('?rios')>0){
+              symbol={...symbol,
+                textName: '{'+LABEL+'}', // O '{name}' si usas properties
+                textPlacement: 'line',      // Alinea el texto a lo largo del trazado
+                textSize: 9,
+                textFill: '#34495e',
+                textHaloFill: '#ffffff',    // Borde blanco para mejorar legibilidad
+                textHaloRadius: 2,
+                //textDy: -12      
+              };
+            }
+            g.updateSymbol(symbol);
           } else console.log(g);
         });
 

@@ -5,6 +5,7 @@ const DELAY=1000;
 const USE_FGB=true;
 
 const murl=document.location.href.toLowerCase();
+let DEFAULT_COLOR='AA0000';
 
 
 let LITE_MODE=false;
@@ -153,6 +154,7 @@ if(murl.indexOf('?rios')>0)
 	initial_coordinates=[-5.931243896484375,43.27820513231556];
 	initial_zoom=7;
 	LABEL='nom_rio';
+	DEFAULT_COLOR='0000EE';
 	//istopojson=false;
  } else
 if(murl.indexOf('?unidad_geologica')>0)
@@ -248,7 +250,7 @@ if(murl.indexOf('?geoboundaries')>0){
 	//console.log(geometry_type);
 	
 	layer_data=[
-		{name:LAYER_TO_LOAD_,min_zoom:MIN_ZOOM_FOR_DATA_,max_zoom:24,CLICK_TEMPLATE:CLICK_TEMPLATE_,geometry_type:geometry_type,color:'AA0000',istopojson:istopojson,label:LABEL}
+		{name:LAYER_TO_LOAD_,min_zoom:MIN_ZOOM_FOR_DATA_,max_zoom:24,CLICK_TEMPLATE:CLICK_TEMPLATE_,geometry_type:geometry_type,color:DEFAULT_COLOR,istopojson:istopojson,label:LABEL}
 	 ];
 }
  else
