@@ -152,6 +152,7 @@ if(murl.indexOf('?rios')>0)
  	CLICK_TEMPLATE_=" <p>cod_mar: <b>${cod_mar}</b></p><p>PFAFRIO: <b>${PFAFRIO}</b></p><p>COD_UNI: <b>${COD_UNI}</b></p><p>nom_rio: <b>${nom_rio}</b></p><p>Shape_Leng: <b>${Shape_Leng}</b></p><p>color: <b>${color}</b></p><p>Long_Rio_m: <b>${Long_Rio_m}</b></p>";
 	initial_coordinates=[-5.931243896484375,43.27820513231556];
 	initial_zoom=7;
+	LABEL='nom_rio';
 	//istopojson=false;
  } else
 if(murl.indexOf('?unidad_geologica')>0)
@@ -390,18 +391,15 @@ if(murl.indexOf('?geoboundaries')>0){
 	 }*/
 
 
-let baseLayer={
-	urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-	attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-}
-
 clean_when_zoom_out=(layer_data.length>1);
 
 let base_layers=[
 	['ocupacion_suelo','https://servicios.idee.es/wmts/ocupacion-suelo?layer=LC.LandCoverSurfaces&style=LC.LandCoverSurfaces.Default&tilematrixset=EPSG:3857&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image%2Fpng&TileMatrix={z}&TileCol={x}&TileRow={y}','idee.es'],
 	['osm','https://tile.openstreetmap.org/{z}/{x}/{y}.png','&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'],
 	['carto','https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png','carto'],
+	['carto_light','https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png','&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'],
 	['arcgis','https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}','arcgis'],
+	['tnspnoa','https://tms-pnoa-ma.idee.es/1.0.0/pnoa-ma/{z}/{x}/{-y}.jpeg','© Instituto Geográfico Nacional (IGN) - PNOA'],
 	['vacio','','']
 ];
 

@@ -1,8 +1,8 @@
 <html>
 <head>
     <link rel="stylesheet" href="site.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.9.0/ol.css" type="text/css">
-    <script src="https://cdn.jsdelivr.net/npm/ol@v10.9.0/dist/ol.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.11.0/ol.css" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/ol@v10.11.0/dist/ol.js"></script>
 
 	<script language="javascript" src="js/utils_c.js"></script>
     <script language="javascript" src="js/simbology.js"></script>
@@ -101,20 +101,6 @@
         }
 
 
-            const labelStyle = new ol.style.Style({
-            text: new Text({
-                font: '13px Calibri,sans-serif',
-                fill: new ol.style.Fill({
-                color: '#000',
-                }),
-                stroke: new ol.style.Stroke({
-                color: '#fff',
-                width: 4,
-                }),
-            }),
-            });
-
-
 
         function init_map(){ 
             // Elements that make up the popup.
@@ -163,31 +149,52 @@
                             })
                         };
 
-                        if(LABEL) if(LABEL.length>0)
-                            e0.text= new ol.style.Text({
-                                                text: String(feature.get(LABEL) || ''),
-                                                font: 'bold 13px Calibri, sans-serif',
 
-                                                fill: new ol.style.Fill({
-                                                    color: '#000000'
-                                                }),
+                        if(LABEL) if(LABEL.length>0){
+                            let config_text={
+                                text: String(feature.get(LABEL) || ''),
+                                font: '13px Calibri,sans-serif',
+                                fill: new ol.style.Fill({
+                                    color: '#000000',
+                                }),
+                                stroke: new ol.style.Stroke({
+                                    color: '#ffffff',
+                                    width: 3,
+                                }),
+                            };
 
-                                                stroke: new ol.style.Stroke({
-                                                    color: '#ffffff',
-                                                    width: 3
-                                                })
-                                            })                        
+                            const use_inline_labels=document.location.href.indexOf('?rios')>0;
+                            if(use_inline_labels){
 
+                                    config_text={...config_text, 
+                                        placement: 'line',
+                                        maxAngle: Math.PI / 4,
+                                        overflow: false, 
+                                        repeat: 500,
+                                    }
+                                
 
-                        let e1= new ol.style.Style(e0);
-                        return e1;
+                            }
+                            e0.text=new ol.style.Text(config_text);
+                            let labelStyle= new ol.style.Style(e0);
+                            return labelStyle;
+                        }
                     }
             });
 
+            //ol.source.OSM()
+            const baseLayer_ol=new ol.layer.Tile({
+                source: new ol.source.XYZ({
+                    url: base_layer,
+                    attributions: baselayer_attribution,
+                })
+                });
+            
+
             map = new ol.Map({
                 layers: [
-                    new ol.layer.Tile({ source: new ol.source.OSM() })
-                    ,vectorLayer //heatmap
+                    baseLayer_ol,
+                    vectorLayer //heatmap
                     //new ol.layer.Vector({ source })
                 ],
                 overlays: [overlay],
