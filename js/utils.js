@@ -397,7 +397,7 @@ function default_init_multiworker2(updateResults,clearOldData,getNewMap,useOrigC
 
 
   function cleanLayerDEF(layer_name,zoom){
-      console.log('Layer '+layer_name+' not in zoom range: '+zoom);
+    return;
   }
 
 function getNewMapGen(m_petition,range,screen_width,cleanLayer,coef2,loadGeoJsonDataArray_){
@@ -430,7 +430,10 @@ function getNewMapGen(m_petition,range,screen_width,cleanLayer,coef2,loadGeoJson
             if(!loadGeoJsonDataArray_) loadGeoJsonDataArray_=loadGeoJsonDataArray;
 						init_stream(params,true,loadGeoJsonDataArray_); //true TODO
 					} else {
-						if(!cleanLayer) cleanLayer=cleanLayerDEF;
+						 
+            console.log('Layer '+l.name+' not in zoom range: ',zoom,ll,l.max_zoom);
+
+            if(!cleanLayer) cleanLayer=cleanLayerDEF;
             if(workers[l.name]) {
               console.log('Borramos IDs cargados deletebitmapindex '+l.name);
   						

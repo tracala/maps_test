@@ -446,7 +446,7 @@ async function* iterateFeatures_block_lines(topo_data,key, candidates,min_distan
 }
 
 
-async function* iterateFeatures_block(topo_data,key, candidates,min_distance,layer){
+async function* iterateFeatures_block(topo_data,key, candidates,min_distance,layer,tematico){
 
               //TODO:filtrar los pequeños
               let output_topojson={};
@@ -486,7 +486,7 @@ async function* iterateFeatures_block(topo_data,key, candidates,min_distance,lay
                   }
                   //20260926
                   if(addColor) {
-                    l.properties.color=getSymbology(key,l.properties,i);
+                    l.properties.color=getSymbology(key,l.properties,i,tematico);
                     if(!l.properties['TEXTO'])  l.properties['TEXTO']='';
                   }
                   if(addTexture) if(!l.properties.texture) l.properties.texture=i % MAX_TEXTURES; //Math.ceil(Math.random()*MAX_TEXTURES);
