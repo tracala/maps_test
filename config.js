@@ -241,6 +241,7 @@ if(murl.indexOf('?geoboundaries')>0){
  let layer_data=[];
  if(LAYER_TO_LOAD_) {
 	let geometry_type='Polygon';
+	if(LAYER_TO_LOAD_=='rios') geometry_type='Line';
 	
 	if('curvas,swc,'.indexOf(LAYER_TO_LOAD_+',')>=0) geometry_type='Line';
 	if('edificios_madrid,'.indexOf(LAYER_TO_LOAD_+',')>=0) geometry_type='Extrusion';
