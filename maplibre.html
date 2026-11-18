@@ -62,7 +62,7 @@ function fgBoundingBox() {
 
 
 let cleanLayer = function(layer_name){
-	console.log('Layer '+layer_name+' not in zoom range');
+	//console.log('Layer '+layer_name+' not in zoom range');
 	if(map.getSource(layer_name)){
 		map.getSource(layer_name).setData({
 			"type": "FeatureCollection",
@@ -73,14 +73,17 @@ let cleanLayer = function(layer_name){
 
 
 
+	let v_map={
+		getRange: getBoundingBox3857,
+		getWidth: ()=>{return map._container.clientWidth},
+		loadData: loadGeoJsonDataArray,
+		cleanLayer: cleanLayer
+	}
 
-function getNewMap(m_petition){
-                let range=getBoundingBox3857();
-				let screen_width=map._container.clientWidth;
-				//let zoom=map.getZoom();
-				getNewMapGen(m_petition,range,screen_width,cleanLayer);
-				
-}
+	function getNewMap(m_petition){
+			const coef2=2; //10 null;
+			getNewMapGenV(m_petition,v_map,coef2);
+	}
 
 
 
