@@ -253,6 +253,10 @@ if(murl.indexOf('?geoboundaries')>0){
 	if(murl.indexOf('?cos_portugal')>0){
 		initial_coordinates=[ -8.040983676910402, 39.41974703824895];
 		initial_zoom=6;//14;
+		
+		//initial_zoom=14;
+		//initial_coordinates=[-8.064240416448001,  39.41441072688875];
+
 		layer_data=[
 					{name:'cos_suelo_portugal',min_zoom:12,max_zoom:24,CLICK_TEMPLATE:"<p>cos25v1_n4: <b>${cos25v1_n4}</b></p><p>cos25v1__1: <b>${cos25v1__1}</b></p><p>Area_ha: <b>${Area_ha}</b></p>",geometry_type:'Polygon',tematico:'cos25v1_n4',istopojson:true}
 		];

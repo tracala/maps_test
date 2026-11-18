@@ -81,7 +81,13 @@ let cleanLayer = function(layer_name){
 	}
 
 	function getNewMap(m_petition){
-			const coef2=2; //10 null;
+			let coef2=null;
+			if(params.get("coef2")) {
+				coef2=parseFloat(params.get("coef2"), 0);
+				console.log('coef2 from params',coef2);
+			}
+
+
 			getNewMapGenV(m_petition,v_map,coef2);
 	}
 
