@@ -182,13 +182,20 @@
                     }
             });
 
-            //ol.source.OSM()
-            const baseLayer_ol=new ol.layer.Tile({
-                source: new ol.source.XYZ({
+            let baseLayer_source;
+
+            if (url_params.get('base') == 'osm') {
+                baseLayer_source = new ol.source.OSM();
+            } else {
+                baseLayer_source = new ol.source.XYZ({
                     url: base_layer,
-                    attributions: baselayer_attribution,
-                })
+                    attributions: baselayer_attribution
                 });
+            }                
+            
+            const baseLayer_ol=new ol.layer.Tile({
+                source: baseLayer_source
+            });
             
 
             map = new ol.Map({

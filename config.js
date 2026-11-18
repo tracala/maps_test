@@ -30,15 +30,15 @@ initial_zoom=9;
 CLICK_TEMPLATE_="<p>Referencia: <b>${REFCAT}</b></p><p>Area: <b>${AREA}</b></p>";
 
 
-let params = new URLSearchParams(document.location.search);
+let url_params = new URLSearchParams(document.location.search);
 
-let coef2=params.get("coef");
-if(coef2) {
-	coef=parseFloat(coef2);
-	console.log('coef',coef);
+let coef_overwrite=url_params.get("coef_overwrite");
+if(coef_overwrite) {
+	coef=parseFloat(coef_overwrite);
+	console.log('coef_overwrite',coef);
 }
 
-let lite=params.get('lite');
+let lite=url_params.get('lite');
 if(lite && lite.toLocaleLowerCase()==='true') {
 	LITE_MODE=true;
 	console.log('LITE_MODE');
