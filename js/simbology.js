@@ -5,7 +5,10 @@ const patterns = ['dots', 'hatch-1x', 'hatch-2x', 'hatch-cross'];
 
 
 let tematico={
-	cos_suelo_portugal:'cos25v1_n4'
+	cos_suelo_portugal:'cos25v1_n4',
+  mup:'ESTADO',
+  montes_recintos:'ESTADO,TIPO',
+  montes:'ESTADO'
 };
 
 const HSL_S = 0.9; // Saturation (0-1)
@@ -204,7 +207,6 @@ function intermediateColor(color1, color2, factor) {
 //let min_dias=9999999999999999;;
 //let max_dias=0;
 
-
 function getSymbology(layer,properties,ii){
 	if(layer=='corine'){
 		var l=properties['CODE_18'];
@@ -234,14 +236,18 @@ function getSymbology(layer,properties,ii){
 		}
 	else if(tematico[layer]){
 		//Tematico
-		//console.log('tematico',tematico[layer]);
-		let l=properties[tematico[layer]];
+		console.log('tematico',tematico[layer]);
+		let l=tematico[layer];
+    l=l.split(',').map((s)=>(properties[s]||'eeeeee')).join('--');
 		if(l==null) return 'eeeeee';
-		return stringToColorHSL_HEX(l).substring(1);
+    let color=stringToColorHSL_HEX(l).substring(1);
+    //console.log('l',l,color);
+		return color;
 	}
 	else
     {
-		return getRandomColorSeed(ii);
+      console.log('random color',layer);
+      return getRandomColorSeed(ii);
 	}
 
 }
