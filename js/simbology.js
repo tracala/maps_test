@@ -5,7 +5,9 @@ const patterns = ['dots', 'hatch-1x', 'hatch-2x', 'hatch-cross'];
 
 
 let tematico={
-	cos_suelo_portugal:'cos25v1_n4'
+	cos_suelo_portugal:'cos25v1_n4',
+  mup:'ESTADO',
+  montes_recintos:'ESTADO,TIPO'
 };
 
 const HSL_S = 0.9; // Saturation (0-1)
@@ -235,13 +237,16 @@ function getSymbology(layer,properties,ii){
 	else if(tematico[layer]){
 		//Tematico
 		//console.log('tematico',tematico[layer]);
-		let l=properties[tematico[layer]];
+		let l=tematico[layer];
+    l=l.split(',').map((s)=>(properties[s]||'eeeeee')).join('--');
 		if(l==null) return 'eeeeee';
-		return stringToColorHSL_HEX(l).substring(1);
+    let color=stringToColorHSL_HEX(l).substring(1);
+    //console.log('l',l,color);
+		return color;
 	}
 	else
     {
-		return getRandomColorSeed(ii);
+      return getRandomColorSeed(ii);
 	}
 
 }
