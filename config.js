@@ -356,8 +356,36 @@ if(murl.indexOf('?geoboundaries')>0){
 			];
 			istopojson=true;
 		}else
-
 		if(murl.indexOf('?mup')>0){
+			//initial_coordinates=[-5.931243896484375,43.27820513231556];
+			initial_coordinates=[-5.851253047585488,43.3611914622564];
+			initial_zoom=8;
+			const LAYER_CHANGE=11
+			layer_data=[
+				{name:'parroquias',min_zoom:3,max_zoom:LAYER_CHANGE,CLICK_TEMPLATE:"<p>NOMBRE: <b>${NOMBRE}</b></p><p>MUN: <b>${MUN}</b></p>",geometry_type:'Polygon',color:'0000AA',istopojson:true},
+				{name:'montes',min_zoom:LAYER_CHANGE,max_zoom:24,
+					CLICK_TEMPLATE:'<h3><b>${NOMBRE}</b></h3><hr></hr><p>ESTADO: <b>${ESTADO}</b></p><p>OBJECTID: <b>${OBJECTID}</b></p><p>NCATALOGO: <b>${NCATALOGO}</b></p><p>CONCEJO: <b>${CONCEJO}</b></p><p>SUPERFICIE: <b>${SUPERFICIE}</b></p><p>PERIMETRO: <b>${PERIMETRO}</b></p><p>SC: <b>${SC}</b></p><p>IDMONT: <b>${IDMONT}</b></p>'+
+					'<p>DIFIERE_TO: <b>${DIFIERE_TO}</b></p><p>SHAPE_Leng: <b>${SHAPE_Leng}</b></p><p>SHAPE_Area: <b>${SHAPE_Area}</b></p><p>NNCATALOG: <b>${NNCATALOG}</b></p><p>Declarado_: <b>${Declarado_}</b></p><p>Titular: <b>${Titular}</b></p><p>Pertenenci: <b>${Pertenenci}</b></p>'
+
+					/*
+					'<p>Fotografia: <b>${Fotografia}</b></p>'+
+					'<hr></hr>'+
+					'<p><a hef="${D011_M_P_J}">D011_M_P_J</a></p>'+
+					'<p><a hef="${D012_P}">D012_P</a></p>'+
+					'<p><a hef="${D012_P}">D020_B_I</a></p>'+
+					'<p><a hef="${D030_I_J}">D030_I_J</a></p>'+
+					'<p><a hef="${D041_I_C_F}">D041_I_C_F</a></p>'+
+					'<p><a hef="${D042_A_C_F}">D042_A_C_F</a></p>'
+					*/
+//{D051_A_A}</b></p><p>D052_L_T: <b>${D052_L_T}</b></p><p>D061_I_I_O: <b>${D061_I_I_O}</b></p><p>D062_A_I_I: <b>${D062_A_I_I}</b></p><p>D070_B_V_P: <b>${D070_B_V_P}</b></p><p>D081_I_T_R: <b>${D081_I_T_R}</b></p><p>D082_I_J_R: <b>${D082_I_J_R}</b></p><p>D090_I_P_J: <b>${D090_I_P_J}</b></p><p>D101_R_A_D: <b>${D101_R_A_D}</b></p><p>D102_B_R: <b>${D102_B_R}</b></p><p>D111_I_F_P: <b>${D111_I_F_P}</b></p><p>D112_I_F_P: <b>${D112_I_F_P}</b></p><p>D113_I_F_P: <b>${D113_I_F_P}</b></p><p>D121_M_G: <b>${D121_M_G}</b></p><p>D122_R_G: <b>${D122_R_G}</b></p><p>D131_I_T_R: <b>${D131_I_T_R}</b></p><p>D132_I_J_R: <b>${D132_I_J_R}</b></p><p>D140_I_P_J: <b>${D140_I_P_J}</b></p><p>D151_R_A_D: <b>${D151_R_A_D}</b></p><p>D152_B_R2: <b>${D152_B_R2}</b></p><p>D000_OTROS: <b>${D000_OTROS}</b></p><p>D123_CPG: <b>${D123_CPG}</b></p><p>D160_MEP: <b>${D160_MEP}</b></p><p>D170_AD: <b>${D170_AD}</b></p>
+					,geometry_type:'Polygon',color:'AA0000',istopojson:true}
+			];
+			istopojson=true;
+		}else
+
+			
+
+		if(murl.indexOf('?recintos_mup')>0){
 			//initial_coordinates=[-5.931243896484375,43.27820513231556];
 			initial_coordinates=[-5.851253047585488,43.3611914622564];
 			initial_zoom=8;
@@ -403,6 +431,9 @@ let base_layers=[
 	['carto_light','https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png','&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'],
 	['arcgis','https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}','arcgis'],
 	['tnspnoa','https://tms-pnoa-ma.idee.es/1.0.0/pnoa-ma/{z}/{x}/{-y}.jpeg','© Instituto Geográfico Nacional (IGN) - PNOA'],
+	['ignbase','https://tms-ign-base.idee.es/1.0.0/IGNBaseTodo/{z}/{x}/{-y}.jpeg','ign'],
+	['bing','https://ecn.t3.tiles.virtualearth.net/tiles/a{q}.jpeg?g=0&dir=dir_n','Microsoft Bing'],
+	//['pnoa-ma','https://www.ign.es/wmts/pnoa-ma?request=GetCapabilities&service=WMTSlayer=OI.OrthoimageCoverage&style=default&tilematrixset=EPSG:3857&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image%2Fjpeg&TileMatrix={z}&TileCol={x}&TileRow={y}','ign'],
 	['vacio','','']
 ];
 
