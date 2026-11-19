@@ -396,10 +396,6 @@ function default_init_multiworker2(updateResults,clearOldData,getNewMap,useOrigC
 }
 
 
-  function cleanLayerDEF(layer_name,zoom){
-    return;
-  }
-
   let actual_zoom=0;
 
 
@@ -437,15 +433,13 @@ function default_init_multiworker2(updateResults,clearOldData,getNewMap,useOrigC
 					} else {
 						 
             console.log('Layer '+l.name+' not in zoom range: ',zoom,ll,l.max_zoom);
-
-            if(!cleanLayer) cleanLayer=cleanLayerDEF;
             if(workers[l.name]) {
               console.log('Borramos IDs cargados deletebitmapindex '+l.name);
   						
               let params={command:'deletebitmapindex',LAYER_TO_LOAD:l.name};
               workers[l.name].postMessage(params);
             } else console.log('No se encuentra worker');
-            cleanLayer(l.name,zoom);
+            if(cleanLayer) cleanLayer(l.name,zoom);
 					}
 				}
 }
