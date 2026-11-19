@@ -400,10 +400,15 @@ function default_init_multiworker2(updateResults,clearOldData,getNewMap,useOrigC
     return;
   }
 
-function getNewMapGen(m_petition,range,screen_width,cleanLayer,coef2,loadGeoJsonDataArray_){
+  let actual_zoom=0;
+
+
+
+  function getNewMapGen(m_petition,range,screen_width,cleanLayer,coef2,loadGeoJsonDataArray_){
 				let map_width=(range[2]-range[0]);
 				
 				let zoom=27.135-Math.log2(map_width);
+        actual_zoom=zoom;
 				//console.log('zoom',zoom,map.getZoom());
 
 				let DINAMIC_MIN_DISTANCE=Math.round(map_width/screen_width)*coef;
@@ -448,9 +453,9 @@ function getNewMapGen(m_petition,range,screen_width,cleanLayer,coef2,loadGeoJson
 
 function getNewMapGenV(m_petition,v_map,coef2_){
   let coef2=coef2_;
-  if(params.get("coef2")) {
-    coef2=Number.parseFloat(params.get("coef2"), 0);
-    console.log('coef2 from params',coef2);
+  if(url_params.get("coef2")) {
+    coef2=Number.parseFloat(url_params.get("coef2"), 0);
+    console.log('coef2 from url_params',coef2);
   }
  return getNewMapGen(m_petition,v_map.getRange(),v_map.getWidth(),v_map.cleanLayer,coef2,v_map.loadData);
 }

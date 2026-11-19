@@ -51,8 +51,9 @@
       spatialReference: spatialReference,
       zoom: initial_zoom,
       baseLayer: new maptalks.TileLayer('base', {
-        urlTemplate: base_layer,
-        subdomains: ['a', 'b', 'c', 'd']
+        urlTemplate: base_layer.replace('{s}',''),
+        //subdomains: ['a', 'b', 'c', 'd']
+        attribution:baselayer_attribution
       })
       
     });
@@ -95,10 +96,23 @@
               'polygonOpacity': 0.4
             });
           } else if (( g instanceof maptalks.LineString) || (g instanceof maptalks.MultiLineString)) {
-            g.updateSymbol({
+            let symbol={
               'lineColor': '#'+color,
-              'lineWidth': 1,
-            });
+              'lineWidth': 2,
+            };
+            const useLabels=(actual_zoom>14);
+            if(useLabels && murl.indexOf('?rios')>0){
+              symbol={...symbol,
+                textName: '{'+LABEL+'}', // O '{name}' si usas properties
+                textPlacement: 'line',      // Alinea el texto a lo largo del trazado
+                textSize: 9,
+                textFill: '#34495e',
+                textHaloFill: '#ffffff',    // Borde blanco para mejorar legibilidad
+                textHaloRadius: 2,
+                //textDy: -12      
+              };
+            }
+            g.updateSymbol(symbol);
           } else console.log(g);
         });
 
@@ -148,37 +162,16 @@
       
 
 
-    /*
-    function updateResults_(){
-            let range=map.getPrjExtent(); 
-            let zoom=map.getZoom();
-            //console.log('range',range);
-            let screen_width=map.getContainer().clientWidth;
-            let map_width=(range.xmax-range.xmin);
+    let v_map={
+      getRange: ()=>{let range_=map.getPrjExtent();return [range_.xmin,range_.ymin,range_.xmax,range_.ymax]},
+      getWidth: ()=>{return map.getContainer().clientWidth},
+      loadData: loadGeoJsonDataArray,
+      cleanLayer: null
+      }
 
-            let DINAMIC_MIN_DISTANCE=Math.round(map_width/screen_width)*coef;        
-            let command='getStream';
-            for(let l of layer_data){
-                if((zoom>=l.min_zoom) && (zoom<=l.max_zoom)){
-                    let params={command:command,LAYER_TO_LOAD:l.name,DINAMIC_MIN_DISTANCE:DINAMIC_MIN_DISTANCE,
-                        xmin:range.xmin,ymin:range.ymin,xmax:range.xmax,ymax:range.ymax};
-                    init_stream(params,true,loadGeoJsonDataArray); 
-                } else {
-                    console.log('Layer '+l.name+' not in zoom range');
-                }
-            }				
-
-    }*/
+  	const getNewMap=(m_petition)=>getNewMapGenV(m_petition,v_map,null);
 
 
-
-    function getNewMap(m_petition){
-            let range_=map.getPrjExtent(); 
-            let range=[range_.xmin,range_.ymin,range_.xmax,range_.ymax];
-            let screen_width=map.getContainer().clientWidth;
-            getNewMapGen(m_petition,range,screen_width,null);
-            
-    }
 
 
 
