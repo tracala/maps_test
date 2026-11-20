@@ -53,6 +53,18 @@ function withPattern(s){
 }
 
 
+function links_campos(s){
+	return '';
+	//https://sig4.tragsatec.es/ http://sig-pc.tragsatec.es:20483/
+	let ar=s.split(',');
+	ar=ar.map((s)=>{return s.trim()});
+	ar=ar.map((s)=>'<a href="${'+s+'}"  target="_blank">'+s+'</a> ');
+	let ss=ar.join('');
+	ss='<p>'+ss+'</p>';
+	return ss;
+}
+
+
 if(murl.indexOf('?swc')>0){
 	MIN_ZOOM_FOR_DATA_=10;
 	LAYER_TO_LOAD_='swc';
@@ -365,10 +377,11 @@ if(murl.indexOf('?geoboundaries')>0){
 				{name:'parroquias',min_zoom:3,max_zoom:LAYER_CHANGE,CLICK_TEMPLATE:"<p>NOMBRE: <b>${NOMBRE}</b></p><p>MUN: <b>${MUN}</b></p>",geometry_type:'Polygon',color:'0000AA',istopojson:true},
 				{name:'montes',min_zoom:LAYER_CHANGE,max_zoom:24,
 					CLICK_TEMPLATE:'<h3><b>${NOMBRE}</b></h3><hr></hr><p>ESTADO: <b>${ESTADO}</b></p><p>OBJECTID: <b>${OBJECTID}</b></p><p>NCATALOGO: <b>${NCATALOGO}</b></p><p>CONCEJO: <b>${CONCEJO}</b></p><p>SUPERFICIE: <b>${SUPERFICIE}</b></p><p>PERIMETRO: <b>${PERIMETRO}</b></p><p>SC: <b>${SC}</b></p><p>IDMONT: <b>${IDMONT}</b></p>'+
-					'<p>DIFIERE_TO: <b>${DIFIERE_TO}</b></p><p>SHAPE_Leng: <b>${SHAPE_Leng}</b></p><p>SHAPE_Area: <b>${SHAPE_Area}</b></p><p>NNCATALOG: <b>${NNCATALOG}</b></p><p>Declarado_: <b>${Declarado_}</b></p><p>Titular: <b>${Titular}</b></p><p>Pertenenci: <b>${Pertenenci}</b></p>'
+					'<p>DIFIERE_TO: <b>${DIFIERE_TO}</b></p><p>SHAPE_Leng: <b>${SHAPE_Leng}</b></p><p>SHAPE_Area: <b>${SHAPE_Area}</b></p><p>NNCATALOG: <b>${NNCATALOG}</b></p><p>Declarado_: <b>${Declarado_}</b></p><p>Titular: <b>${Titular}</b></p><p>Pertenenci: <b>${Pertenenci}</b></p>'+
+					'<p><a href="${Fotografia}" target="_blank">Foto</a></p>'+
+					links_campos('D011_M_P_J, D012_P, D020_B_I, D030_I_J, D041_I_C_F, D042_A_C_F, D051_A_A, D052_L_T, D061_I_I_O, D062_A_I_I, D070_B_V_P, D081_I_T_R, D082_I_J_R, D090_I_P_J, D101_R_A_D, D102_B_R, D111_I_F_P, D112_I_F_P, D113_I_F_P, D121_M_G, D122_R_G, D131_I_T_R, D132_I_J_R, D140_I_P_J, D151_R_A_D, D152_B_R2, D000_OTROS, D123_CPG, D160_MEP, D170_AD')
 
 					/*
-					'<p>Fotografia: <b>${Fotografia}</b></p>'+
 					'<hr></hr>'+
 					'<p><a hef="${D011_M_P_J}">D011_M_P_J</a></p>'+
 					'<p><a hef="${D012_P}">D012_P</a></p>'+
