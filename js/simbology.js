@@ -246,7 +246,7 @@ function getSymbology(layer,properties,ii){
 	}
 	else
     {
-      console.log('random color',layer);
+      //console.log('random color',layer);
       return getRandomColorSeed(ii);
 	}
 

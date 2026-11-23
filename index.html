@@ -93,7 +93,7 @@
     // Opciones de los desplegables
     const tipos = 'maplibre,maplibre_deckgl,cesium,openlayers,leaflet2,leaflet,maptalks,gleo,leaflet_pixi,maptalks_three,maptalks3d,deckgl';
     const datos = 'mup,parroquias,gadm2,edificios_madrid,secciones,siose,corine,espa_cuencas,rios,cos_portugal';
-    const baseMaps = 'pnoa,osm,carto,arcgis,arcgis2,ocupacion_suelo,ignbase';
+    const baseMaps = 'pnoa,osm,carto,arcgis,arcgis2,ocupacion_suelo,ignbase,SITPA Clases Agrológicas,SITPA Riesgos Naturales,SITPA Temáticos,sigpac,vacio';
 
 
     function rellenarDeplegable(id, opciones) {
@@ -123,7 +123,15 @@
 
         const tipo = document.getElementById("tipoMapa").value;
         const dato = document.getElementById("dato").value;
-        const baseMap = document.getElementById("baseMap").value;
+        let baseMap = document.getElementById("baseMap").value;
+        baseMap=baseMap.split(' ').join('_');
+        baseMap=baseMap.split('á').join('a');
+        baseMap=baseMap.split('é').join('e');
+        baseMap=baseMap.split('í').join('i');
+        baseMap=baseMap.split('ó').join('o');
+        baseMap=baseMap.split('ú').join('u');
+        baseMap=baseMap.toLowerCase();
+        console.log(baseMap);
 
         window.location.href =encodeURIComponent(tipo) + '.html?'+encodeURIComponent(dato) + '&base=' + encodeURIComponent(baseMap);
     };

@@ -375,7 +375,7 @@ if(murl.indexOf('?geoboundaries')>0){
 			const LAYER_CHANGE=11
 			layer_data=[
 				{name:'parroquias',min_zoom:3,max_zoom:LAYER_CHANGE,CLICK_TEMPLATE:"<p>NOMBRE: <b>${NOMBRE}</b></p><p>MUN: <b>${MUN}</b></p>",geometry_type:'Polygon',color:'0000AA',istopojson:true},
-				{name:'montes',min_zoom:LAYER_CHANGE,max_zoom:24,
+				{name:'montes2026',min_zoom:LAYER_CHANGE,max_zoom:24,
 					CLICK_TEMPLATE:'<h3><b>${NOMBRE}</b></h3><hr></hr><p>ESTADO: <b>${ESTADO}</b></p><p>OBJECTID: <b>${OBJECTID}</b></p><p>NCATALOGO: <b>${NCATALOGO}</b></p><p>CONCEJO: <b>${CONCEJO}</b></p><p>SUPERFICIE: <b>${SUPERFICIE}</b></p><p>PERIMETRO: <b>${PERIMETRO}</b></p><p>SC: <b>${SC}</b></p><p>IDMONT: <b>${IDMONT}</b></p>'+
 					'<p>DIFIERE_TO: <b>${DIFIERE_TO}</b></p><p>SHAPE_Leng: <b>${SHAPE_Leng}</b></p><p>SHAPE_Area: <b>${SHAPE_Area}</b></p><p>NNCATALOG: <b>${NNCATALOG}</b></p><p>Declarado_: <b>${Declarado_}</b></p><p>Titular: <b>${Titular}</b></p><p>Pertenenci: <b>${Pertenenci}</b></p>'+
 					'<p><a href="${Fotografia}" target="_blank">Foto</a></p>'+
@@ -447,6 +447,10 @@ let base_layers=[
 	['tnspnoa','https://tms-pnoa-ma.idee.es/1.0.0/pnoa-ma/{z}/{x}/{-y}.jpeg','© Instituto Geográfico Nacional (IGN) - PNOA'],
 	['ignbase','https://tms-ign-base.idee.es/1.0.0/IGNBaseTodo/{z}/{x}/{-y}.jpeg','ign'],
 	['bing','https://ecn.t3.tiles.virtualearth.net/tiles/a{q}.jpeg?g=0&dir=dir_n','Microsoft Bing'],
+	['sigpac','https://sigpac-hubcloud.es/wms?SERVICE=WMS&REQUEST=GetMap&version=1.1.1&layers=AU.Sigpac:recinto&styles=recinto&format=image%2Fpng&transparent=true&info_format=text%2Fhtml&tiled=false&srs=EPSG:3857&bbox={bbox-epsg-3857}&width=256&height=256','SIGPAC'],
+	['sitpa_clases_agrologicas','https://sig.asturias.es/servicios/services/ClasesAgrologicas/MapServer/WMSServer?SERVICE=WMS&REQUEST=GetMap&version=1.1.1&layers=Clases_Agrológicas12197&styles=default&format=image%2Fpng&transparent=true&info_format=text%2Fhtml&tiled=false&srs=EPSG:3857&bbox={bbox-epsg-3857}&width=256&height=256','Principado de Asturias'],
+	['sitpa_tematicos',encodeURI('https://sig.asturias.es/servicios/services/CartografiaTematicaAmbiental/MapServer/WMSServer?SERVICE=WMS&REQUEST=GetMap&version=1.1.1&layers=Formaciones Superficiales,Unidades de vegetación,Áreas de roquedo,Unidades Litológicas&styles=,,,,&format=image%2Fpng&transparent=true&info_format=text%2Fhtml&tiled=false&srs=EPSG:3857&bbox={bbox-epsg-3857}&width=256&height=256'),'Principado de Asturias'],
+	['sitpa_riesgos_naturales',encodeURI('https://sig.asturias.es/servicios/services/RiesgosNaturales/MapServer/WMSServer?SERVICE=WMS&REQUEST=GetMap&version=1.1.1&layers=Desprendimientos_de_Rocas65049,Grandes_Movimientos_en_Masa24298,Incendios_Forestales50465,Deslizamientos_Superficiales26689,Aludes_de_nieve4167,&styles=,,,,,&format=image%2Fpng&transparent=true&info_format=text%2Fhtml&tiled=false&srs=EPSG:3857&bbox={bbox-epsg-3857}&width=256&height=256'),'Principado de Asturias'],
 	//['pnoa-ma','https://www.ign.es/wmts/pnoa-ma?request=GetCapabilities&service=WMTSlayer=OI.OrthoimageCoverage&style=default&tilematrixset=EPSG:3857&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image%2Fjpeg&TileMatrix={z}&TileCol={x}&TileRow={y}','ign'],
 	['vacio','','']
 ];
