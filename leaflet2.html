@@ -143,7 +143,8 @@
 		cleanLayer: cleanLayer
 	}
 
-	const getNewMap=(m_petition)=>getNewMapGenV(m_petition,v_map,16);
+	const coef2_=0.01; //Precision
+	const getNewMap=(m_petition)=>getNewMapGenV(m_petition,v_map,coef2_); //16
 
 
 	function init_map(){
