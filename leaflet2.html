@@ -38,11 +38,10 @@
 
 
 </head>
-<!-- #
- 	EPSG:8857
-	incluir proj4js
-
-    var map = L.map('map', {crs: L.CRS.EPSG4326});
+<!--
+	Mapa en CRS EPSG:4326 (Leaflet 2).
+	Las tiles WMTS (IGN) siguen siendo EPSG:3857, por lo que el TileLayer
+	se configura con su propio CRS para que la rejilla de tiles sea correcta.
 -->
 
  <body>
@@ -118,6 +117,7 @@
     function getBoundingBox3857() {
         const b = map.getBounds();
         return [epsg4326ToEpsg3857([b.getWest(),b.getSouth()]),epsg4326ToEpsg3857([b.getEast(),b.getNorth()])].flatMap(x=>x);
+		//return [b.getWest(),b.getSouth(),b.getEast(),b.getNorth()];
     }
 
     function clearOldData(layer){
@@ -154,7 +154,9 @@
 		const tiles = new TileLayer(base_layer, {
 				maxZoom: maxZoom,
                 minZoom: minZoom,
-				attribution: baselayer_attribution
+				attribution: baselayer_attribution,
+				// Las tiles del WMTS son EPSG:3857; el mapa es EPSG:4326
+				//crs: CRS.EPSG3857
 		}).addTo(map);
 
 	}

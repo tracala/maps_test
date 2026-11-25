@@ -85,6 +85,17 @@ function hexToRgbaArray(hex, alpha = 1.0) {
         return [r, g, b, alpha * 255];
 }
 
+function hexToRgbaArray_OL(hex, opacity = 0.4) {
+        if(hex.replace) hex = hex.replace('#', ''); else console.log(hex);
+        const bigint = parseInt(hex, 16);
+        const r = (bigint >> 16) & 255;
+        const g = (bigint >> 8) & 255;
+        const b = bigint & 255;
+        return [r, g, b, opacity];
+}
+
+
+
 function swap_color(s){
 	return s.substring(2,4)+s.substring(0,2)+s.substring(4,6);
 }

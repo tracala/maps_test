@@ -145,63 +145,30 @@ function loadGeoJsonDataArray(ar){
     };
     loadGeoJsonData(geojson);
 }
+            let v_map={
+                getRange: function(){
+                    const currentBoundingBox = getViewBoundingBox(viewer);
 
-/*
-function updateResults_(){
-    const currentBoundingBox = getViewBoundingBox(viewer);
+                    if (Cesium.defined(currentBoundingBox)) {
+                        // Convertir el rectángulo a coordenadas de latitud y longitud para uso externo
+                        const west = Cesium.Math.toDegrees(currentBoundingBox.west);
+                        const south = Cesium.Math.toDegrees(currentBoundingBox.south);
+                        const east = Cesium.Math.toDegrees(currentBoundingBox.east);
+                        const north = Cesium.Math.toDegrees(currentBoundingBox.north);
 
-    if (Cesium.defined(currentBoundingBox)) {
-        // Convertir el rectángulo a coordenadas de latitud y longitud para uso externo
-        const west = Cesium.Math.toDegrees(currentBoundingBox.west);
-        const south = Cesium.Math.toDegrees(currentBoundingBox.south);
-        const east = Cesium.Math.toDegrees(currentBoundingBox.east);
-        const north = Cesium.Math.toDegrees(currentBoundingBox.north);
-
-        //console.log("Bounding Box (W, S, E, N):", west, south, east, north);        
-        let range=getBoundingBox3857(west,south,east,north);
-        let map_width=(range[2]-range[0]);
-
-        let screen_width=viewer._container.clientWidth;
-        let DINAMIC_MIN_DISTANCE=Math.round(map_width/screen_width)*coef;
-        
-        let zoom=getZoomFromScale(map_width)+12;
-        let command='getStream';
-
-        for(let l of layer_data){
-            if((zoom>=l.min_zoom) && (zoom<=l.max_zoom)){
-                let params={command:command,LAYER_TO_LOAD:l.name,DINAMIC_MIN_DISTANCE:DINAMIC_MIN_DISTANCE,
-                    xmin:range[0],ymin:range[1],xmax:range[2],ymax:range[3]};
-                init_stream(params,true,loadGeoJsonDataArray); 
-            } else {
-                console.log('Layer '+l.name+' not in zoom range');
+                        //console.log("Bounding Box (W, S, E, N):", west, south, east, north);        
+                        let range=getBoundingBox3857(west,south,east,north);
+                        return range;
+                    }
+                    else { console.log('Fuera del planeta');return null;}
+                },
+                getWidth: ()=>{return viewer._container.clientWidth},
+                loadData: (ar,layer_name)=>{return loadGeoJsonDataArray(ar,layer_name);},
+                cleanLayer: null
             }
-        }				        
-                            
-    } else console.log('Fuera del planeta');
 
-}
-*/
-
-        function getNewMap(m_petition){
-
-            const currentBoundingBox = getViewBoundingBox(viewer);
-
-            if (Cesium.defined(currentBoundingBox)) {
-                // Convertir el rectángulo a coordenadas de latitud y longitud para uso externo
-                const west = Cesium.Math.toDegrees(currentBoundingBox.west);
-                const south = Cesium.Math.toDegrees(currentBoundingBox.south);
-                const east = Cesium.Math.toDegrees(currentBoundingBox.east);
-                const north = Cesium.Math.toDegrees(currentBoundingBox.north);
-
-                //console.log("Bounding Box (W, S, E, N):", west, south, east, north);        
-                let range=getBoundingBox3857(west,south,east,north);
-
-                let screen_width=viewer._container.clientWidth;
-                getNewMapGen(m_petition,range,screen_width,null);
-                                    
-            } else console.log('Fuera del planeta');
-
-        }
+	const coef2_=0.01;
+	const getNewMap=(m_petition)=>getNewMapGenV(m_petition,v_map,coef2_); //16        
 
 
     updateResults=getUpdateResultsFunction(default_update_results);
