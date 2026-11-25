@@ -469,3 +469,6 @@ const MULTIWORKER=true;
 const default_init=(MULTIWORKER)?default_init_multiworker:default_init_single;
 const init_stream=(MULTIWORKER)?init_stream_multiworker:init_stream_single;
 
+function log1(...s){
+  if(url_params.get('debug_mode')=='true') console.log(...s);
+}
