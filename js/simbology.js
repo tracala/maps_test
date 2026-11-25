@@ -248,7 +248,7 @@ function getSymbology(layer,properties,ii){
 		}
 	else if(tematico[layer]){
 		//Tematico
-		console.log('tematico',layer,tematico[layer]);
+		//console.log('tematico',layer,tematico[layer]);
 		let l=tematico[layer];
     l=l.split(',').map((s)=>(properties[s]||'eeeeee')).join('--');
 		if(l==null) return 'eeeeee';
@@ -258,7 +258,7 @@ function getSymbology(layer,properties,ii){
 	}
 	else
     {
-      console.log('random color',layer);
+      //console.log('random color',layer);
       return getRandomColorSeed(ii);
 	}
 
