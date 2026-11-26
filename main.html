@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Visor GIS</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1976d2">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .contenedor {
+            max-width: 400px;
+            margin: 80px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px #0003;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .campo {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 11px;
+            font-size: 16px;
+            border: 0;
+            border-radius: 4px;
+            background: #1976d2;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1565c0;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="contenedor">
+
+    <h2 title='Tragsatec 2026'>Pruebas Visor de Montes</h2>
+
+    <div class="campo">
+        <label for="tipoMapa">Motor</label>
+        <select id="tipoMapa"></select>
+    </div>
+
+    <div class="campo">
+        <label for="dato">Dato</label>
+        <select id="dato"></select>
+    </div>
+
+    <div class="campo">
+        <label for="baseMap">Mapa Base</label>
+        <select id="baseMap"></select>
+    </div>
+
+    <button id="aceptar">Aceptar</button>
+
+</div>
+
+<script>
+
+    // Opciones de los desplegables
+    const tipos = 'maplibre,maplibre2,maplibre_deckgl,cesium,openlayers,leaflet2,leaflet,maptalks,gleo,leaflet_pixi,maptalks_three,maptalks3d,deckgl';
+    const datos = 'mup,parroquias,gadm2,edificios_madrid,secciones,siose,corine,espa_cuencas,rios,cos_portugal';
+    const baseMaps = 'pnoa,osm,carto,arcgis,arcgis2,ocupacion_suelo,ignbase,SITPA Clases Agrológicas,SITPA Riesgos Naturales,SITPA Temáticos,sigpac,vacio';
+
+
+    function rellenarDeplegable(id, opciones) {
+        const select = document.getElementById(id);
+
+        let opciones_ar= opciones.split(',');
+        opciones_ar.forEach(opcion => {
+
+            const option = document.createElement("option");
+
+            option.value = opcion;
+            option.textContent = opcion;
+
+            select.appendChild(option);
+        });
+        return select;
+
+    }
+    
+    rellenarDeplegable("tipoMapa", tipos);
+    rellenarDeplegable("dato", datos);
+    rellenarDeplegable("baseMap", baseMaps);
+
+
+    // Botón Aceptar
+    document.getElementById("aceptar").onclick = function () {
+
+        const tipo = document.getElementById("tipoMapa").value;
+        const dato = document.getElementById("dato").value;
+        let baseMap = document.getElementById("baseMap").value;
+        baseMap=baseMap.split(' ').join('_');
+        baseMap=baseMap.split('á').join('a');
+        baseMap=baseMap.split('é').join('e');
+        baseMap=baseMap.split('í').join('i');
+        baseMap=baseMap.split('ó').join('o');
+        baseMap=baseMap.split('ú').join('u');
+        baseMap=baseMap.toLowerCase();
+        console.log(baseMap);
+
+        window.location.href =encodeURIComponent(tipo) + '.html?'+encodeURIComponent(dato) + '&base=' + encodeURIComponent(baseMap);
+    };
+
+
+
+</script>
+
+</body>
+</html>
