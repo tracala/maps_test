@@ -374,7 +374,10 @@ if(murl.indexOf('?geoboundaries')>0){
 			initial_zoom=8;
 			const LAYER_CHANGE=11
 			layer_data=[
-				{name:'parroquias',min_zoom:3,max_zoom:LAYER_CHANGE,CLICK_TEMPLATE:"<p>NOMBRE: <b>${NOMBRE}</b></p><p>MUN: <b>${MUN}</b></p>",geometry_type:'Polygon',color:'0000AA',istopojson:true},
+				//{name:'parroquias',min_zoom:3,max_zoom:LAYER_CHANGE,CLICK_TEMPLATE:"<p>NOMBRE: <b>${NOMBRE}</b></p><p>MUN: <b>${MUN}</b></p>",geometry_type:'Polygon',color:'0000AA',istopojson:true},
+				{name:'concejos',min_zoom:3,max_zoom:LAYER_CHANGE,CLICK_TEMPLATE:
+					"<h3>${concejo}</h3><hr></hr><p>conceyu: <b>${conceyu}</b></p><p>Codigo INE: <b>${codigo_ine}</b></p><p>Longitud: <b>${shape_Leng}</b></p><p>Area: <b>${shape_Area}</b></p>"
+					,geometry_type:'Polygon',color:'0000AA',istopojson:true},
 				{name:'montes_mup',min_zoom:LAYER_CHANGE,max_zoom:24,
 					CLICK_TEMPLATE:'<h3><b>${NOMBRE}</b></h3><hr></hr><p>ESTADO: <b>${ESTADO}</b></p><p>OBJECTID: <b>${OBJECTID}</b></p><p>NCATALOGO: <b>${NCATALOGO}</b></p><p>CONCEJO: <b>${CONCEJO}</b></p><p>SUPERFICIE: <b>${SUPERFICIE}</b></p><p>PERIMETRO: <b>${PERIMETRO}</b></p><p>SC: <b>${SC}</b></p><p>IDMONT: <b>${IDMONT}</b></p>'+
 					'<p>DIFIERE_TO: <b>${DIFIERE_TO}</b></p><p>SHAPE_Leng: <b>${SHAPE_Leng}</b></p><p>SHAPE_Area: <b>${SHAPE_Area}</b></p><p>NNCATALOG: <b>${NNCATALOG}</b></p><p>Declarado_: <b>${Declarado_}</b></p><p>Titular: <b>${Titular}</b></p><p>Pertenenci: <b>${Pertenenci}</b></p>'+
